@@ -20,7 +20,7 @@ from app.api import deps
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.crud.crud_user import user as crud_user
-from app.schemas.user import User, UserCreate
+from app.schemas.user import User, UserCreate, UserUpdate
 
 router = APIRouter()
 
@@ -159,3 +159,76 @@ def read_user_me(current_user: User = Depends(deps.get_current_active_user)) -> 
     """
 
     return current_user
+
+
+@router.put("/me", response_model=User)
+def update_user_me(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_in: UserUpdate,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Update current user profile.
+    
+    Update profile information of the currently authenticated user.
+    This will update the updated_at timestamp.
+    
+    Args:
+        db: Database session (injected)
+        user_in: UserUpdate schema with fields to update
+        current_user: Currently authenticated user (injected)
+        
+    Returns:
+        User: Updated user data with updated_at timestamp
+        
+    Example:
+        {
+            "full_name": "New Name",
+            "email": "newemail@example.com"
+        }
+    """
+    user = crud_user.update(db, db_obj=current_user, obj_in=user_in)
+    return user
+
+
+@router.delete("/me", response_model=User)
+def delete_user_me(
+    *,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Soft delete current user account (IRREVERSIBLE).
+    
+    ⚠️ WARNING: This action is IRREVERSIBLE. The user will NOT be able to:
+    - Login to the account again
+    - Recover the account through the API
+    - Access any data associated with the account
+    
+    The account is marked as is_deleted=True (soft delete pattern).
+    Data is preserved in the database for:
+    - Audit trail and compliance (GDPR/LGPD)
+    - Financial record keeping
+    - Legal requirements
+    
+    However, the account is permanently inaccessible to the user.
+    Only database administrators can reverse this operation manually.
+    
+    Args:
+        db: Database session (injected)
+        current_user: Currently authenticated user (injected)
+        
+    Returns:
+        User: User data with is_deleted=True
+        
+    Raises:
+        HTTPException 410: On subsequent API calls after deletion
+        
+    Example:
+        DELETE /api/v1/auth/me
+        → Account marked as deleted
+        → All future requests return 410 Gone
+    """
+    user = crud_user.update(db, db_obj=current_user, obj_in={"is_deleted": True})
+    return user

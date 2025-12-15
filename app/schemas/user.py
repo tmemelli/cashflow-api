@@ -27,11 +27,13 @@ class UserBase(BaseModel):
 
     Attributes:
         email: User's email address (validated format)
+        full_name: User's full name
         is_active: Whether the account is active
         is_superuser: Whether the user has admin privileges
     """
 
     email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
 
@@ -46,12 +48,14 @@ class UserCreate(UserBase):
     Attributes:
         email: Required email address
         password: Plain text password (will be hashed)
+        full_name: User's full name (optional)
     """
 
     email: EmailStr
     password: str = Field(
         ..., min_length=8, description="User password (min 8 characters)"
     )
+    full_name: str = Field(..., min_length=1, max_length=150, description="User's full name")
 
     @field_validator('email')
     @classmethod
@@ -93,15 +97,21 @@ class UserInDB(UserBase):
         id: User's unique identifier
         email: User's email
         hashed_password: Bcrypt hashed password
+        full_name: User's full name
+        is_deleted: Soft delete flag
         created_at: When user was created
         updated_at: When user was last updated
+        last_login_at: When user last logged in
     """
 
     id: int
     email: EmailStr
     hashed_password: str
+    full_name: str
+    is_deleted: bool = False
     created_at: datetime
     updated_at: Optional[datetime] = None
+    last_login_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -111,20 +121,30 @@ class User(UserBase):
     """
     Schema for user data returned by API.
 
-    This is what API clients receive. Excludes sensitive fields
-    like hashed_password.
+    This is what API clients receive. Excludes only hashed_password.
+    All other database fields are included.
 
     Attributes:
         id: User's unique identifier
         email: User's email
+        full_name: User's full name
         is_active: Account status
         is_superuser: Admin status
+        is_deleted: Soft delete flag
         created_at: Creation timestamp
+        updated_at: Profile update timestamp
+        last_login_at: Last login timestamp
     """
 
     id: int
     email: EmailStr
+    full_name: str
+    is_active: bool
+    is_superuser: bool
+    is_deleted: bool
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    last_login_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

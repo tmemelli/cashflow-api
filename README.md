@@ -34,6 +34,7 @@ A professional RESTful API for personal financial management, built with modern 
 - [API Documentation](#-api-documentation)
 - [Screenshots](#-screenshots)
 - [Project Structure](#-project-structure)
+- [Changelog](#-changelog)
 - [Future Improvements](#-future-improvements)
 - [Author](#-author)
 
@@ -67,7 +68,20 @@ This project demonstrates **production-ready code** with:
 - **Token Expiration** - Configurable session timeout
 - **User Authorization** - Endpoint-level permission control
 
-### 📊 Financial Management
+### � User Profile Management
+- **Full Name Field** - Required user identification (1-150 characters)
+- **Account Status Tracking** - is_active, is_superuser, is_deleted flags
+- **Smart Timestamp Separation** - Industry-standard approach to audit trails:
+  - `created_at` - Account creation timestamp (auto-generated on registration)
+  - `updated_at` - Profile modification timestamp (updated only when user data changes)
+  - `last_login_at` - Authentication tracking (updated only on successful login)
+- **Timestamp Implementation** - Uses direct SQL updates to prevent unintended side effects:
+  - Login updates `last_login_at` via `db.execute()` without triggering `updated_at`
+  - Profile updates modify `updated_at` manually in CRUD layer
+  - Demonstrates understanding of ORM behavior and production best practices
+- **Self-Service Profile Endpoint** - Users update their own data via `/me` (token-based identification)
+
+### �📊 Financial Management
 - **Dual Transaction Types** - Income and Expense tracking
 - **Category System** - Organize transactions by custom or default categories
 - **Soft Delete** - Transactions are marked as deleted, not permanently removed (audit trail)
@@ -292,19 +306,32 @@ POST /api/v1/transactions/
 GET /api/v1/transactions/statistics
 ```
 
+#### 7️⃣ Update Your Profile
+```bash
+PUT /api/v1/auth/me
+{
+  "full_name": "Thiago Memelli Updated",
+  "email": "newemail@example.com"
+}
+```
+
+**Note:** This updates `updated_at` timestamp but NOT `last_login_at` (smart timestamp separation).
+
 ---
 
 ## 📚 API Documentation
 
-### Complete Endpoint List (18 Endpoints)
+### Complete Endpoint List (20 Endpoints)
 
-### 🔐 Authentication (3 endpoints)
+### 🔐 Authentication (5 endpoints)
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
 | POST | `/api/v1/auth/register` | Register new user | ❌ |
 | POST | `/api/v1/auth/login` | Login and get JWT token | ❌ |
 | GET | `/api/v1/auth/me` | Get current user info | ✅ |
+| PUT | `/api/v1/auth/me` | Update current user profile | ✅ |
+| DELETE | `/api/v1/auth/me` | Soft delete account (IRREVERSIBLE) | ✅ |
 
 ### 📁 Categories (5 endpoints)
 
@@ -450,6 +477,8 @@ cashflow-api/
 │       ├── category.py         # Category Pydantic schemas
 │       └── transaction.py      # Transaction Pydantic schemas
 ├── docs/
+│   ├── CHANGELOG.md            # Version history and updates
+│   ├── USER_PROFILE_FEATURE.md # Detailed feature documentation
 │   └── screenshots/            # API testing screenshots
 ├── tests/                      # Unit & integration tests (future)
 ├── .env                        # Environment variables
@@ -471,7 +500,30 @@ cashflow-api/
 
 ---
 
-## 🚧 Future Improvements
+## � Changelog
+
+### Version 1.1.0 (December 15, 2025)
+
+**✨ New Features:**
+- User Profile Management with smart timestamp separation
+- PUT `/api/v1/auth/me` endpoint for self-service profile updates
+- Full name field added to user registration
+
+**🔧 Technical Improvements:**
+- Implemented industry-standard audit trail pattern
+- Direct SQL updates to prevent ORM side effects
+- Manual timestamp control in CRUD layer
+
+**📚 Documentation:**
+- Comprehensive changelog ([docs/CHANGELOG.md](docs/CHANGELOG.md))
+- Feature deep-dive guide ([docs/USER_PROFILE_FEATURE.md](docs/USER_PROFILE_FEATURE.md))
+- New screenshots showing timestamp behavior (17-23)
+
+**For full details**, see [CHANGELOG.md](docs/CHANGELOG.md)
+
+---
+
+## �🚧 Future Improvements
 
 ### Planned Features
 

@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # Database configuration
     DATABASE_URL: str = "sqlite:///./cashflow.db"
 
+    # AI Settings - ADICIONAR AQUI
+    OPENAI_API_KEY: str
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
     class Config:
         """
         Pydantic configuration class.

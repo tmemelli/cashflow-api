@@ -34,6 +34,7 @@ Uma API RESTful profissional para gestão financeira pessoal, construída com te
 - [Documentação da API](#-documentação-da-api)
 - [Screenshots](#-screenshots)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Histórico de Versões](#-histórico-de-versões)
 - [Melhorias Futuras](#-melhorias-futuras)
 - [Autor](#-autor)
 
@@ -67,7 +68,20 @@ Este projeto demonstra **código pronto para produção** com:
 - **Expiração de Token** - Timeout de sessão configurável
 - **Autorização de Usuário** - Controle de permissões em nível de endpoint
 
-### 📊 Gestão Financeira
+### � Gerenciamento de Perfil do Usuário
+- **Campo Nome Completo** - Identificação obrigatória do usuário (1-150 caracteres)
+- **Rastreamento de Status da Conta** - Flags is_active, is_superuser, is_deleted
+- **Separação Inteligente de Timestamps** - Abordagem padrão da indústria para trilhas de auditoria:
+  - `created_at` - Timestamp de criação da conta (gerado automaticamente no registro)
+  - `updated_at` - Timestamp de modificação do perfil (atualizado apenas quando dados do usuário mudam)
+  - `last_login_at` - Rastreamento de autenticação (atualizado apenas no login bem-sucedido)
+- **Implementação de Timestamps** - Usa atualizações SQL diretas para prevenir efeitos colaterais indesejados:
+  - Login atualiza `last_login_at` via `db.execute()` sem acionar `updated_at`
+  - Atualizações de perfil modificam `updated_at` manualmente na camada CRUD
+  - Demonstra compreensão do comportamento do ORM e práticas de produção
+- **Endpoint de Perfil Self-Service** - Usuários atualizam seus próprios dados via `/me` (identificação baseada em token)
+
+### �📊 Gestão Financeira
 - **Tipos Duplos de Transação** - Rastreamento de Receitas e Despesas
 - **Sistema de Categorias** - Organize transações por categorias personalizadas ou padrão
 - **Exclusão Suave** - Transações são marcadas como excluídas, não removidas permanentemente (trilha de auditoria)
@@ -116,20 +130,20 @@ Este projeto demonstra **código pronto para produção** com:
 
 ```
 app/
-├── api/                    # Camada de API (Controllers)
+├── api/                   # Camada de API (Controllers)
 │   ├── deps.py            # Injeção de dependência
 │   └── v1/
 │       ├── api.py         # Agregação de rotas
 │       └── endpoints/     # Manipuladores de rotas
 ├── core/                  # Configuração Central
-│   ├── config.py         # Gerenciamento de configurações
-│   └── security.py       # Utilitários de autenticação
+│   ├── config.py          # Gerenciamento de configurações
+│   └── security.py        # Utilitários de autenticação
 ├── crud/                  # Camada de Acesso a Dados
-│   ├── base.py           # Operações CRUD genéricas
-│   └── crud_*.py         # Operações específicas do modelo
+│   ├── base.py            # Operações CRUD genéricas
+│   └── crud_*.py          # Operações específicas do modelo
 ├── db/                    # Camada de Banco de Dados
-│   ├── base.py           # Registro de modelos
-│   └── session.py        # Conexão com BD
+│   ├── base.py            # Registro de modelos
+│   └── session.py         # Conexão com BD
 ├── models/                # Camada de Domínio (Modelos ORM)
 │   ├── user.py
 │   ├── category.py
@@ -292,19 +306,32 @@ POST /api/v1/transactions/
 GET /api/v1/transactions/statistics
 ```
 
+#### 7️⃣ Atualizar Seu Perfil
+```bash
+PUT /api/v1/auth/me
+{
+  "full_name": "Thiago Memelli Atualizado",
+  "email": "novoemail@exemplo.com"
+}
+```
+
+**Nota:** Isso atualiza o timestamp `updated_at` mas NÃO o `last_login_at` (separação inteligente de timestamps).
+
 ---
 
 ## 📚 Documentação da API
 
-### Lista Completa de Endpoints (18 endpoints)
+### Lista Completa de Endpoints (20 endpoints)
 
-### 🔐 Autenticação (3 endpoints)
+### 🔐 Autenticação (5 endpoints)
 
 | Método | Endpoint | Descrição | Auth Necessária |
-|--------|----------|-----------|-----------------|
+|--------|----------|-----------|------------------|
 | POST | `/api/v1/auth/register` | Registrar novo usuário | ❌ |
 | POST | `/api/v1/auth/login` | Login e obter token JWT | ❌ |
 | GET | `/api/v1/auth/me` | Obter informações do usuário atual | ✅ |
+| PUT | `/api/v1/auth/me` | Atualizar perfil do usuário atual | ✅ |
+| DELETE | `/api/v1/auth/me` | Excluir conta (IRREVERSÍVEL) | ✅ |
 
 ### 📁 Categorias (5 endpoints)
 
@@ -470,7 +497,28 @@ cashflow-api/
 - **`base.py` (db)**: Ponto central de importação para todos os modelos (suporte Alembic)
 
 ---
+## 📝 Histórico de Versões
 
+### Versão 1.1.0 (15 de Dezembro de 2025)
+
+**✨ Novos Recursos:**
+- Gerenciamento de Perfil do Usuário com separação inteligente de timestamps
+- Endpoint PUT `/api/v1/auth/me` para atualizações self-service de perfil
+- Campo nome completo adicionado ao registro de usuário
+
+**🔧 Melhorias Técnicas:**
+- Implementado padrão de trilha de auditoria usado pela indústria
+- Atualizações SQL diretas para prevenir efeitos colaterais do ORM
+- Controle manual de timestamps na camada CRUD
+
+**📚 Documentação:**
+- Changelog abrangente ([docs/CHANGELOG.md](docs/CHANGELOG.md))
+- Guia detalhado da feature ([docs/USER_PROFILE_FEATURE.md](docs/USER_PROFILE_FEATURE.md))
+- Novos screenshots mostrando comportamento de timestamps (17-23)
+
+**Para detalhes completos**, veja [CHANGELOG.md](docs/CHANGELOG.md)
+
+---
 ## 🚧 Melhorias Futuras
 
 ### Funcionalidades Planejadas

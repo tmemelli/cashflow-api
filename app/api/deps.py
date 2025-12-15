@@ -129,19 +129,20 @@ def get_current_user(
 
 def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
     """
-    Dependency that returns current user only if account is active.
+    Dependency that returns current user only if account is active and not deleted.
 
-    This is a wrapper around get_current_user that adds an additional
-    check for account status. Use this in routes that require active accounts.
+    This is a wrapper around get_current_user that adds additional
+    checks for account status. Use this in routes that require active accounts.
 
     Args:
         current_user: User from get_current_user dependency
 
     Returns:
-        User: The current user if active
+        User: The current user if active and not deleted
 
     Raises:
         HTTPException 400: If user account is inactive
+        HTTPException 410: If user account is deleted (soft delete)
 
     Example usage in a route:
         @app.post("/transactions/")
@@ -149,7 +150,7 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
             transaction: TransactionCreate,
             current_user: User = Depends(get_current_active_user)
         ):
-            # Only active users can create transactions
+            # Only active, non-deleted users can create transactions
             return crud_transaction.create(db, obj_in=transaction, owner_id=current_user.id)
 
     Dependency chain:
@@ -158,4 +159,11 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
 
     if not crud_user.is_active(current_user):
         raise HTTPException(status_code=400, detail="Inactive user")
+    
+    if current_user.is_deleted:
+        raise HTTPException(
+            status_code=410,  # 410 Gone - Resource deleted
+            detail="User account has been deleted"
+        )
+    
     return current_user

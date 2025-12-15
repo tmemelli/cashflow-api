@@ -5,9 +5,10 @@ This module provides CRUD operations specific to the User model.
 It inherits from CRUDBase and adds user-specific functionality like
 email lookup, password hashing, and authentication.
 """
-
+from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
@@ -80,6 +81,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db_obj = User(
             email=obj_in.email,
             hashed_password=get_password_hash(obj_in.password),
+            full_name=obj_in.full_name,
             is_active=obj_in.is_active,
             is_superuser=obj_in.is_superuser,
         )
@@ -121,6 +123,14 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
         if not verify_password(password, user.hashed_password):
             return None
+
+        # Update last login timestamp using SQL directly
+        # This avoids triggering the onupdate of updated_at field
+        db.execute(
+            update(User).where(User.id == user.id).values(last_login_at=datetime.utcnow())
+        )
+        db.commit()
+        db.refresh(user)
 
         return user
 

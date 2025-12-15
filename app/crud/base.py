@@ -8,6 +8,7 @@ to maintain type safety while being flexible.
 The CRUDBase class is inherited by specific CRUD classes like CRUDUser.
 """
 
+from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
@@ -146,6 +147,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update_data = obj_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
+        
+        # Update updated_at timestamp if model has this field
+        if hasattr(db_obj, 'updated_at'):
+            db_obj.updated_at = datetime.utcnow()
+        
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
