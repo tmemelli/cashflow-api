@@ -48,12 +48,18 @@ class Category(Base):
         type: Whether this is for income or expense (CategoryType enum)
         is_default: Whether this is a system category (True) or user-created (False)
         user_id: Owner of the category (NULL for system categories, set for user categories)
+        is_deleted: Soft delete flag (True = deleted, False = active)
+        deleted_at: When category was deleted (NULL if active)
         created_at: When category was created
         updated_at: When category was last modified
         
     Relationships:
         owner: The User who created this category (NULL for system categories)
         transactions: List of Transaction records using this category
+    
+    Soft Delete:
+        Categories use soft delete to preserve historical data and transaction relationships.
+        Deleted categories can be restored by creating a category with the same name/type.
     
     Examples:
         System category:
@@ -70,6 +76,8 @@ class Category(Base):
     type = Column(Enum(CategoryType), nullable=False)
     is_default = Column(Boolean, default=False, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
     

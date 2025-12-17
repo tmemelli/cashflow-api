@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_active_user
 from app.crud.crud_transaction import transaction as crud_transaction
 from app.crud.crud_category import category as crud_category
 from app.models.user import User
@@ -31,7 +31,7 @@ router = APIRouter()
 @router.get("/summary")
 def get_summary(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     start_date: Optional[date] = None,
     end_date: Optional[date] = None
 ):
@@ -102,7 +102,7 @@ def get_summary(
 @router.get("/by-category")
 def get_by_category(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     transaction_type: Optional[TransactionType] = None
@@ -229,7 +229,7 @@ def get_by_category(
 @router.get("/monthly")
 def get_monthly(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     months: int = Query(default=6, ge=1, le=12, description="Number of months to retrieve")
 ):
     """
@@ -315,7 +315,7 @@ def get_monthly(
 @router.get("/trends")
 def get_trends(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     period: str = Query(default="weekly", regex="^(daily|weekly|monthly)$")
 ):
     """

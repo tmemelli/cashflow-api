@@ -647,7 +647,72 @@ SOFTWARE.
 
 ---
 
-## 🙏 Agradecimentos
+## � Melhorias Futuras & Roadmap
+
+Esta seção demonstra consciência sobre requisitos de nível produção e considerações de escalabilidade.
+
+### 🧪 Testes & Garantia de Qualidade
+- [ ] **Testes Unitários** com pytest (meta: 80%+ cobertura)
+- [ ] **Testes de Integração** para endpoints da API
+- [ ] **Testes de Carga** com Locust/k6
+- [ ] **Testes de Segurança** (validação OWASP Top 10)
+
+### 🚀 DevOps & Infraestrutura
+- [ ] **Docker/Docker Compose** para containerização
+- [ ] **Pipeline CI/CD** (GitHub Actions/GitLab CI)
+- [ ] **Migrations com Alembic** (atualmente usando sistema customizado)
+- [ ] **Configuração por Ambiente** (dev/staging/prod)
+- [ ] **Endpoints de Health Check** (/health, /ready)
+
+### 📊 Observabilidade & Monitoramento
+- [ ] **Logs Estruturados** (logs JSON com IDs de correlação)
+- [ ] **APM** (Application Performance Monitoring)
+- [ ] **Métricas & Dashboards** (Prometheus/Grafana)
+- [ ] **Rastreamento de Erros** (integração Sentry)
+- [ ] **Logs de Auditoria** para compliance
+
+### 🔒 Melhorias de Segurança
+- [ ] **Rate Limiting** por usuário/IP (prevenir abuso de API)
+- [ ] **Validação de Requisições** com schemas mais rigorosos
+- [ ] **Configuração CORS** para produção
+- [ ] **Gerenciamento de API Keys** para auth service-to-service
+- [ ] **Gerenciamento de Secrets** (AWS Secrets Manager/Vault)
+
+### ⚡ Performance & Escalabilidade
+- [ ] **Connection Pooling** otimizado para banco de dados
+- [ ] **Cache Redis** para queries frequentes
+- [ ] **Padronização de Paginação** em todos endpoints
+- [ ] **Otimização de Queries** com índices apropriados
+- [ ] **Tarefas Assíncronas em Background** (Celery/Dramatiq)
+
+### 🤖 Melhorias no Serviço de IA
+- [ ] **Lógica de Retry** para falhas da API OpenAI
+- [ ] **Mecanismos de Fallback** quando IA estiver indisponível
+- [ ] **Monitoramento de Custo** de uso OpenAI por usuário
+- [ ] **Streaming de Respostas** para melhor UX
+- [ ] **Cache de Contexto** para reduzir chamadas à API
+
+### 📚 Documentação
+- [ ] **Diagramas de Arquitetura** (C4 Model/Draw.io)
+- [ ] **Estratégia de Versionamento** da API documentada
+- [ ] **Documentação do Schema** do banco (diagramas ERD)
+- [ ] **Guia de Deploy** para produção
+- [ ] **Guia de Contribuição** para open source
+
+### 🌐 Funcionalidades Adicionais
+- [ ] **Suporte Multi-moeda**
+- [ ] **Planejamento de Orçamento & Alertas**
+- [ ] **Transações Recorrentes**
+- [ ] **Exportação de Dados** (relatórios CSV/PDF)
+- [ ] **Integração com App Mobile** (cliente REST)
+
+---
+
+> **Nota para Recrutadores:** Este roadmap demonstra minha compreensão de sistemas prontos para produção e requisitos de nível enterprise. Embora este seja um projeto de portfólio, estou plenamente consciente do que é necessário para escalar e manter software em ambientes de produção.
+
+---
+
+## �🙏 Agradecimentos
 
 - **FastAPI** - Pelo excelente framework web assíncrono
 - **SQLAlchemy** - Pelas poderosas capacidades de ORM

@@ -13,8 +13,10 @@ Then access:
     - Alternative docs: http://localhost:8000/redoc
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from app.api.v1.api import api_router
 from app.core.config import settings
@@ -77,6 +79,19 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+
+
+# Middleware to prevent caching (helps with Swagger UI token issues)
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
+
+app.add_middleware(NoCacheMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

@@ -651,7 +651,72 @@ SOFTWARE.
 
 ---
 
-## 🙏 Acknowledgments
+## � Future Improvements & Roadmap
+
+This section demonstrates awareness of production-grade requirements and scalability considerations.
+
+### 🧪 Testing & Quality Assurance
+- [ ] **Unit Tests** with pytest (target: 80%+ coverage)
+- [ ] **Integration Tests** for API endpoints
+- [ ] **Load Testing** with Locust/k6
+- [ ] **Security Testing** (OWASP Top 10 validation)
+
+### 🚀 DevOps & Infrastructure
+- [ ] **Docker/Docker Compose** for containerization
+- [ ] **CI/CD Pipeline** (GitHub Actions/GitLab CI)
+- [ ] **Database Migrations** with Alembic (currently using custom system)
+- [ ] **Environment-based Configuration** (dev/staging/prod)
+- [ ] **Health Check Endpoints** (/health, /ready)
+
+### 📊 Observability & Monitoring
+- [ ] **Structured Logging** (JSON logs with correlation IDs)
+- [ ] **Application Performance Monitoring** (APM)
+- [ ] **Metrics & Dashboards** (Prometheus/Grafana)
+- [ ] **Error Tracking** (Sentry integration)
+- [ ] **Audit Logs** for compliance
+
+### 🔒 Security Enhancements
+- [ ] **Rate Limiting** per user/IP (prevent API abuse)
+- [ ] **Request Validation** with stricter schemas
+- [ ] **CORS Configuration** for production
+- [ ] **API Key Management** for service-to-service auth
+- [ ] **Secrets Management** (AWS Secrets Manager/Vault)
+
+### ⚡ Performance & Scalability
+- [ ] **Database Connection Pooling** optimization
+- [ ] **Redis Caching** for frequent queries
+- [ ] **Pagination** standardization across all endpoints
+- [ ] **Query Optimization** with proper indexes
+- [ ] **Async Background Tasks** (Celery/Dramatiq)
+
+### 🤖 AI Service Improvements
+- [ ] **Retry Logic** for OpenAI API failures
+- [ ] **Fallback Mechanisms** when AI is unavailable
+- [ ] **Cost Monitoring** for OpenAI usage per user
+- [ ] **Response Streaming** for better UX
+- [ ] **Context Caching** to reduce API calls
+
+### 📚 Documentation
+- [ ] **Architecture Diagrams** (C4 Model/Draw.io)
+- [ ] **API Versioning Strategy** documentation
+- [ ] **Database Schema Documentation** (ERD diagrams)
+- [ ] **Deployment Guide** for production
+- [ ] **Contributing Guidelines** for open source
+
+### 🌐 Additional Features
+- [ ] **Multi-currency Support**
+- [ ] **Budget Planning & Alerts**
+- [ ] **Recurring Transactions**
+- [ ] **Data Export** (CSV/PDF reports)
+- [ ] **Mobile App Integration** (REST client)
+
+---
+
+> **Note for Recruiters:** This roadmap demonstrates my understanding of production-ready systems and enterprise-level requirements. While this is a portfolio project, I'm fully aware of what it takes to scale and maintain software in production environments.
+
+---
+
+## �🙏 Acknowledgments
 
 - **FastAPI** - For the excellent async web framework
 - **SQLAlchemy** - For the powerful ORM capabilities

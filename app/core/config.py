@@ -6,7 +6,7 @@ It reads environment variables from .env file and provides type validation.
 """
 
 from pydantic_settings import BaseSettings
-
+from pydantic import Field
 
 class Settings(BaseSettings):
     """
@@ -24,22 +24,22 @@ class Settings(BaseSettings):
         ACCESS_TOKEN_EXPIRE_MINUTES: Token expiration time in minutes
         DATABASE_URL: SQLite database connection string
     """
-
+    # Application
     PROJECT_NAME: str = "CashFlow API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
     # Security configuration
-    SECRET_KEY: str = "your-very-secure-and-random-secret-key"
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 240
 
     # Database configuration
     DATABASE_URL: str = "sqlite:///./cashflow.db"
 
-    # AI Settings - ADICIONAR AQUI
-    OPENAI_API_KEY: str
-    OPENAI_MODEL: str = "gpt-4o-mini"
+    # AI Settings
+    openai_api_key: str = Field(..., description="OpenAI API Key")
+    openai_model: str = Field(default="gpt-4o-mini", description="OpenAI Model")
 
     class Config:
         """
@@ -48,7 +48,7 @@ class Settings(BaseSettings):
         """
 
         env_file = ".env"
-        case_sensitive = True
+        case_sensitive = False
 
 
 settings = Settings()

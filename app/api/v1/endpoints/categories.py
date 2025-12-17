@@ -15,7 +15,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_active_user
 from app.crud.crud_category import category as crud_category
 from app.models.user import User
 from app.models.category import CategoryType
@@ -33,7 +33,7 @@ router = APIRouter()
 @router.get("/", response_model=List[CategoryResponse])
 def list_categories(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     category_type: Optional[CategoryType] = None,
     skip: int = 0,
     limit: int = 100
@@ -66,7 +66,7 @@ def list_categories(
 def create_category(
     category_in: CategoryCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Create a new user category.
@@ -95,7 +95,7 @@ def create_category(
 def get_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Get category details with transaction count.
@@ -135,7 +135,7 @@ def update_category(
     category_id: int,
     category_in: CategoryUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Update a user category.
@@ -166,6 +166,13 @@ def update_category(
             detail="Category not found"
         )
     
+    # Cannot update deleted categories
+    if category.is_deleted:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Cannot update deleted category"
+        )
+    
     # Cannot update system default categories
     if category.is_default:
         raise HTTPException(
@@ -185,21 +192,27 @@ def update_category(
     return category
 
 
-# TODO: DELETE /categories/{category_id} - Delete category
-@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+# TODO: DELETE /categories/{category_id} - Soft delete category
+@router.delete("/{category_id}", response_model=CategoryResponse)
 def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
-    Delete a user category.
+    Soft delete a user category.
+    
+    The category is marked as deleted (is_deleted=True) but preserved in the database.
+    This maintains transaction history and relationships. Deleted categories:
+    - Will not appear in category listings
+    - Cannot be used for new transactions
+    - Can be restored by creating a category with the same name and type
+    - Preserve historical transaction data
     
     Validates before deletion:
     - Category must exist
     - User must be the owner
     - Cannot delete system default categories
-    - Cannot delete categories with associated transactions
     
     Path Parameters:
     - category_id: Category ID
@@ -208,10 +221,9 @@ def delete_category(
         404: Category not found
         403: Cannot delete system default category
         403: Cannot delete another user's category
-        400: Cannot delete category with associated transactions
     
     Returns:
-        204 No Content on success
+        Soft deleted category object with is_deleted=True and deleted_at timestamp
     """
     # Validate if category can be deleted
     can_delete, message = crud_category.can_delete(
@@ -226,8 +238,6 @@ def delete_category(
             status_code = status.HTTP_404_NOT_FOUND
         elif "cannot delete system" in message.lower():
             status_code = status.HTTP_403_FORBIDDEN
-        elif "associated transactions" in message.lower():
-            status_code = status.HTTP_400_BAD_REQUEST
         else:
             status_code = status.HTTP_403_FORBIDDEN
         
@@ -236,6 +246,6 @@ def delete_category(
             detail=message
         )
     
-    # Delete category
-    crud_category.remove(db, id=category_id)
-    return None
+    # Soft delete category
+    category = crud_category.soft_delete(db, id=category_id)
+    return category

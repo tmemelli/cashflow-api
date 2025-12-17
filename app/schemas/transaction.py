@@ -35,14 +35,13 @@ class TransactionBase(BaseModel):
     category_id: Optional[int] = None
 
 
-class TransactionCreate(TransactionBase):
+class TransactionCreate(BaseModel):
     """
-    Schema for creating a new transaction.
+    Schema for creating or restoring a transaction.
     
-    Inherits all fields from TransactionBase.
-    user_id is set automatically from authenticated user.
+    Two modes of operation:
     
-    Example:
+    1. CREATE NEW TRANSACTION (all fields required except id):
         {
             "type": "expense",
             "amount": 150.50,
@@ -50,8 +49,28 @@ class TransactionCreate(TransactionBase):
             "date": "2025-01-15",
             "category_id": 2
         }
+    
+    2. RESTORE DELETED TRANSACTION (only id provided):
+        {
+            "id": 4
+        }
+        - If transaction with id=4 exists and is deleted, it will be restored
+        - Cannot provide other fields when restoring by id
+    
+    Attributes:
+        id: Optional - Only for restoring deleted transactions
+        type: Transaction type (required when creating new)
+        amount: Transaction amount (required when creating new)
+        description: Optional description
+        date: Transaction date (required when creating new)
+        category_id: Optional category ID
     """
-    pass
+    id: Optional[int] = Field(None, description="Provide only this field to restore a deleted transaction")
+    type: Optional[TransactionType] = None
+    amount: Optional[Decimal] = Field(None, gt=0, description="Amount must be greater than 0")
+    description: Optional[str] = Field(None, max_length=500)
+    date: Optional[date] = None
+    category_id: Optional[int] = None
 
 
 class TransactionUpdate(BaseModel):
@@ -114,6 +133,7 @@ class TransactionResponse(TransactionBase):
     category_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

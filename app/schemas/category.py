@@ -74,6 +74,8 @@ class CategoryResponse(CategoryBase):
         type: Category type
         is_default: Whether this is a system category
         user_id: Owner ID (None for system categories)
+        is_deleted: Whether category is soft deleted
+        deleted_at: When category was deleted (None if active)
         created_at: Creation timestamp
         updated_at: Last update timestamp
     
@@ -84,6 +86,8 @@ class CategoryResponse(CategoryBase):
             "type": "expense",
             "is_default": false,
             "user_id": 5,
+            "is_deleted": false,
+            "deleted_at": null,
             "created_at": "2025-01-15T10:30:00Z",
             "updated_at": "2025-01-15T10:30:00Z"
         }
@@ -93,6 +97,8 @@ class CategoryResponse(CategoryBase):
     type: CategoryType
     is_default: bool
     user_id: Optional[int] = None
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     

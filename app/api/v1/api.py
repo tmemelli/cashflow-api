@@ -9,7 +9,7 @@ The main API router is then included in the application with the
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, categories, transactions, reports
+from app.api.v1.endpoints import auth, categories, transactions, reports, ai_chat
 
 api_router = APIRouter()
 
@@ -39,4 +39,11 @@ api_router.include_router(
     reports.router,
     prefix="/reports",
     tags=["Reports"]
+)
+
+# AI Chat endpoints
+api_router.include_router(
+    ai_chat.router, 
+    prefix="/ai", 
+    tags=["AI Chat"]
 )

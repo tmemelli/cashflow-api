@@ -27,13 +27,13 @@ from app.models.user import User
 # - Creates a dependency that extracts token from: Authorization: Bearer <token>
 # - If no token is provided, automatically returns 401 Unauthorized
 # - The tokenUrl is for API documentation (Swagger UI) to know where to login
-# Esquema OAuth2 (login com username/password no Swagger)
+# OAuth2 scheme (login with username/password in Swagger)
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/login",
     auto_error=False
 )
 
-# Esquema HTTPBearer (colar token direto)
+# HTTPBearer scheme (paste token directly)
 http_bearer = HTTPBearer(auto_error=False)
 
 def get_db() -> Generator:
@@ -123,6 +123,13 @@ def get_current_user(
     user = crud_user.get_by_email(db, email=email)
     if user is None:
         raise credentials_exception
+    
+    # Check if user was deleted (soft delete)
+    if user.is_deleted:
+        raise HTTPException(
+            status_code=410,  # 410 Gone - Resource deleted
+            detail="User account has been deleted"
+        )
 
     return user
 
@@ -159,7 +166,7 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
 
     if not crud_user.is_active(current_user):
         raise HTTPException(status_code=400, detail="Inactive user")
-    
+
     if current_user.is_deleted:
         raise HTTPException(
             status_code=410,  # 410 Gone - Resource deleted

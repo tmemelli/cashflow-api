@@ -72,6 +72,12 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if user.is_deleted:
+        raise HTTPException(
+            status_code=410,  # 410 Gone - Resource deleted
+            detail="User account has been deleted"
+        )
+
     if not crud_user.is_active(user):
         raise HTTPException(status_code=400, detail="Inactive user")
 
@@ -157,7 +163,6 @@ def read_user_me(current_user: User = Depends(deps.get_current_active_user)) -> 
             "created_at": "2025-12-05T10:30:00"
         }
     """
-
     return current_user
 
 

@@ -44,9 +44,12 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
             List of Category objects (both default and user-created)
         """
         query = db.query(self.model).filter(
-            or_(
-                Category.is_default == True,  # System categories
-                Category.user_id == user_id    # User's categories
+            and_(
+                or_(
+                    Category.is_default == True,  # System categories
+                    Category.user_id == user_id    # User's categories
+                ),
+                Category.is_deleted == False  # Exclude deleted categories
             )
         )
         
@@ -77,7 +80,12 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         Returns:
             List of default Category objects
         """
-        query = db.query(self.model).filter(Category.is_default == True)
+        query = db.query(self.model).filter(
+            and_(
+                Category.is_default == True,
+                Category.is_deleted == False
+            )
+        )
         
         if category_type:
             query = query.filter(Category.type == category_type)
@@ -105,7 +113,8 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         query = db.query(self.model).filter(
             and_(
                 Category.user_id == user_id,
-                Category.is_default == False
+                Category.is_default == False,
+                Category.is_deleted == False
             )
         )
         
@@ -124,14 +133,38 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         """
         Create a user category (always non-default).
         
+        If a deleted category with the same name and type exists for this user,
+        it will be restored instead of creating a new one. This preserves
+        historical transaction relationships.
+        
         Args:
             db: Database session
             obj_in: Category creation data
             user_id: User ID
             
         Returns:
-            Created Category object
+            Created or restored Category object
         """
+        # Check if deleted category exists with same name and type
+        deleted_category = db.query(self.model).filter(
+            and_(
+                Category.user_id == user_id,
+                Category.name == obj_in.name,
+                Category.type == obj_in.type,
+                Category.is_deleted == True
+            )
+        ).first()
+        
+        # If deleted category exists, restore it
+        if deleted_category:
+            deleted_category.is_deleted = False
+            deleted_category.deleted_at = None
+            db.add(deleted_category)
+            db.commit()
+            db.refresh(deleted_category)
+            return deleted_category
+        
+        # Otherwise, create new category
         obj_in_data = obj_in.model_dump()
         db_obj = self.model(
             **obj_in_data,
@@ -216,7 +249,8 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
                 or_(
                     Category.is_default == True,
                     Category.user_id == user_id
-                )
+                ),
+                Category.is_deleted == False
             )
         ).first()
         
@@ -227,23 +261,30 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         if category.is_default:
             return False, "Cannot delete system default category"
         
-        # Check if has associated transactions
-        transaction_count = (
-            db.query(func.count(Transaction.id))
-            .filter(
-                and_(
-                    Transaction.category_id == category_id,
-                    Transaction.user_id == user_id,
-                    Transaction.is_deleted == False
-                )
-            )
-            .scalar()
-        ) or 0
-        
-        if transaction_count > 0:
-            return False, f"Cannot delete category with {transaction_count} associated transactions"
-        
+        # With soft delete, we allow deletion even with transactions
+        # Transactions will keep their category_id, but the category will be hidden
         return True, "OK"
+    
+    def soft_delete(self, db: Session, *, id: int) -> Category:
+        """
+        Soft delete a category (mark as deleted).
+        
+        Args:
+            db: Database session
+            id: Category ID
+            
+        Returns:
+            Soft deleted Category object
+        """
+        from datetime import datetime
+        
+        category = db.query(self.model).get(id)
+        category.is_deleted = True
+        category.deleted_at = datetime.utcnow()
+        db.add(category)
+        db.commit()
+        db.refresh(category)
+        return category
 
 
 # Create instance for use in endpoints

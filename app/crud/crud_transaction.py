@@ -153,6 +153,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         
         if transaction:
             transaction.is_deleted = True
+            # set deleted_at timestamp for audit/restore
+            transaction.deleted_at = datetime.utcnow()
             db.add(transaction)
             db.commit()
             db.refresh(transaction)

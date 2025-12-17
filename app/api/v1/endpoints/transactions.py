@@ -17,7 +17,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_active_user
 from app.crud.crud_transaction import transaction as crud_transaction
 from app.crud.crud_category import category as crud_category
 from app.models.user import User
@@ -36,7 +36,7 @@ router = APIRouter()
 @router.get("/", response_model=List[TransactionResponse])
 def list_transactions(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     skip: int = 0,
     limit: int = 100,
     transaction_type: Optional[TransactionType] = None,
@@ -97,17 +97,17 @@ def list_transactions(
     return transactions
 
 
-# TODO: POST /transactions - Create transaction
+# TODO: POST /transactions - Create or restore transaction
 @router.post("/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 def create_transaction(
     transaction_in: TransactionCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
-    Create a new transaction.
+    Create a new transaction or restore a deleted one.
     
-    Request body:
+    MODE 1: Create new transaction (provide all required fields):
     {
         "type": "expense",
         "amount": 150.50,
@@ -116,17 +116,74 @@ def create_transaction(
         "category_id": 2
     }
     
+    MODE 2: Restore deleted transaction (provide only id):
+    {
+        "id": 4
+    }
+    - Restores the deleted transaction with id=4 if it belongs to the user
+    - Cannot provide other fields when restoring by id
+    
     Validates:
     - Category exists and user has access (if category_id provided)
     - Category type matches transaction type (if category_id provided)
+    - Cannot provide id with other fields (for restore mode)
     
     Returns:
-        Created transaction object
+        Created or restored transaction object
         
     Raises:
-        404: Category not found
-        400: Category type mismatch
+        404: Category not found OR Transaction not found (for restore)
+        400: Category type mismatch OR Invalid field combination
+        403: No permission to access category OR No permission to restore transaction
     """
+    # MODE 2: RESTORE deleted transaction by id
+    if transaction_in.id is not None:
+        # Check if other fields are provided (not allowed in restore mode)
+        other_fields_provided = any([
+            transaction_in.type is not None,
+            transaction_in.amount is not None,
+            transaction_in.description is not None,
+            transaction_in.date is not None,
+            transaction_in.category_id is not None
+        ])
+        
+        if other_fields_provided:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot provide other fields when restoring transaction by id. Provide only 'id' field."
+            )
+        
+        # Find deleted transaction
+        from app.models.transaction import Transaction
+        deleted_transaction = db.query(Transaction).filter(
+            Transaction.id == transaction_in.id,
+            Transaction.user_id == current_user.id,
+            Transaction.is_deleted == True
+        ).first()
+        
+        if not deleted_transaction:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Deleted transaction not found or does not belong to you"
+            )
+        
+        # Restore transaction
+        deleted_transaction.is_deleted = False
+        deleted_transaction.deleted_at = None
+        db.add(deleted_transaction)
+        db.commit()
+        db.refresh(deleted_transaction)
+        
+        return deleted_transaction
+    
+    # MODE 1: CREATE new transaction
+    # Validate required fields for creation
+    if not all([transaction_in.type, transaction_in.amount, transaction_in.date]):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing required fields: type, amount, and date are required for creating new transaction"
+        )
+    
     # Validate category if provided
     if transaction_in.category_id:
         category = crud_category.get(db, id=transaction_in.category_id)
@@ -154,7 +211,7 @@ def create_transaction(
     
     # Create transaction
     from app.models.transaction import Transaction
-    transaction_data = transaction_in.model_dump()
+    transaction_data = transaction_in.model_dump(exclude={'id'})  # Exclude id from creation
     db_transaction = Transaction(**transaction_data, user_id=current_user.id)
     db.add(db_transaction)
     db.commit()
@@ -167,7 +224,7 @@ def create_transaction(
 @router.get("/statistics", response_model=dict)
 def get_statistics(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     start_date: Optional[date] = None,
     end_date: Optional[date] = None
 ):
@@ -201,11 +258,11 @@ def get_statistics(
 
 
 # TODO: DELETE /transactions/{transaction_id} - Soft delete
-@router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{transaction_id}", response_model=TransactionResponse)
 def delete_transaction(
     transaction_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Soft delete a transaction.
@@ -220,7 +277,7 @@ def delete_transaction(
         404: Transaction not found or doesn't belong to user
     
     Returns:
-        204 No Content on success
+        Soft deleted transaction object with is_deleted=True and deleted_at timestamp
     """
     transaction = crud_transaction.soft_delete(
         db,
@@ -234,7 +291,7 @@ def delete_transaction(
             detail="Transaction not found"
         )
     
-    return None
+    return transaction
 
 
 # TODO: GET /transactions/{transaction_id} - Get transaction details
@@ -242,7 +299,7 @@ def delete_transaction(
 def get_transaction(
     transaction_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Get transaction details.
@@ -270,7 +327,7 @@ def update_transaction(
     transaction_id: int,
     transaction_in: TransactionUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Update a transaction.
