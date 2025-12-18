@@ -100,6 +100,58 @@ This project demonstrates **production-ready code** with:
 - **Foreign Key Constraints** - Referential integrity in database
 - **Automatic Timestamps** - Track creation and update times
 
+### 🤖 AI-Powered Financial Assistant (NEW!)
+
+CashFlow API now includes an intelligent AI assistant powered by OpenAI's GPT-4o-mini that understands your financial data and answers questions in natural language.
+
+**Key Features:**
+- **Natural Language Queries** - Ask questions about your finances in plain English/Portuguese
+- **Context-Aware Analysis** - AI analyzes your actual transaction data to provide accurate answers
+- **Conversation History** - All chats are saved with timestamps for future reference
+- **Smart Data Retrieval** - Automatically fetches relevant financial data (categories, transactions, totals)
+- **Markdown Cleaning** - Custom cleaner removes 95% of AI formatting for clean text output
+
+**Markdown Cleaner (95% Coverage):**
+Our custom text processing utility ensures AI responses are clean and frontend-ready:
+- ✅ Removes `**bold**`, `*italic*`, `~~strikethrough~~`
+- ✅ Removes `# headers` and `> blockquotes`
+- ✅ Converts `- lists` to `• bullet points`
+- ✅ Removes ` ```code blocks``` ` and `` `inline code` ``
+- ✅ Cleans `[links](url)` to plain text
+- ✅ Preserves line breaks (`\n\n`) for readability
+- ✅ Removes HTML tags and excess whitespace
+- ✅ Output is plain text ready for any frontend
+
+**Example Queries:**
+```
+"How much did I spend this month?"
+"What are my top 3 expense categories?"
+"Show me my income vs expenses"
+"Analyze my spending on food"
+"What's my current balance?"
+```
+
+**How It Works:**
+```
+User Question → AI Service → OpenAI API
+                    ↓
+          Fetch User's Financial Data
+                    ↓
+          Generate Contextual Response
+                    ↓
+          Apply Markdown Cleaner (95%)
+                    ↓
+          Save to Chat History
+                    ↓
+          Return Clean Text to User
+```
+
+**Technical Implementation:**
+- **Service Layer**: `app/services/ai_service.py` - Orchestrates AI interactions
+- **Text Processing**: `app/utils/markdown_cleaner.py` - 17 cleaning rules
+- **Data Model**: `app/models/chat.py` - Conversation history storage
+- **Endpoints**: 3 new routes in `app/api/v1/endpoints/ai_chat.py`
+
 ---
 
 ## 🛠️ Technologies
@@ -114,6 +166,7 @@ This project demonstrates **production-ready code** with:
 | **Bcrypt** | 4.0.1 | Password hashing |
 | **Uvicorn** | 0.38.0 | ASGI server |
 | **SQLite** | 3 | Lightweight database (development) |
+| **OpenAI API** | 2.9.0 | AI-powered chat assistant |
 
 ### Why These Technologies?
 
@@ -130,25 +183,31 @@ This project demonstrates **production-ready code** with:
 
 ```
 app/
-├── api/                   # API Layer (Controllers)
-│   ├── deps.py            # Dependency injection
+├── api/                    # API Layer (Controllers)
+│   ├── deps.py             # Dependency injection
 │   └── v1/
-│       ├── api.py         # Router aggregation
-│       └── endpoints/     # Route handlers
-├── core/                  # Core Configuration
-│   ├── config.py          # Settings management
-│   └── security.py        # Auth utilities
-├── crud/                  # Data Access Layer
-│   ├── base.py            # Generic CRUD operations
-│   └── crud_*.py          # Model-specific operations
-├── db/                    # Database Layer
-│   ├── base.py            # Model registration
-│   └── session.py         # DB connection
-├── models/                # Domain Layer (ORM Models)
+│       ├── api.py          # Router aggregation
+│       └── endpoints/      # Route handlers
+├── core/                   # Core Configuration
+│   ├── config.py           # Settings management
+│   └── security.py         # Auth utilities
+├── crud/                   # Data Access Layer
+│   ├── base.py             # Generic CRUD operations
+│   └── crud_*.py           # Model-specific operations
+├── db/                     # Database Layer
+│   ├── base.py             # Model registration
+│   └── session.py          # DB connection
+├── models/                 # Domain Layer (ORM Models)
 │   ├── user.py
 │   ├── category.py
 │   └── transaction.py
-└── schemas/               # Presentation Layer (DTOs)
+├── services/               # Business Logic Layer
+│   ├── __init__.py
+│   └── ai_service.py       # OpenAI integration & orchestration
+├── utils/                  # Utility Functions
+│   ├── __init__.py
+│   └── markdown_cleaner.py # Text cleaning (95% coverage)
+└── schemas/                # Presentation Layer (DTOs)
     ├── user.py
     ├── category.py
     └── transaction.py
@@ -317,51 +376,74 @@ PUT /api/v1/auth/me
 
 **Note:** This updates `updated_at` timestamp but NOT `last_login_at` (smart timestamp separation).
 
+### 🤖 AI-Powered Financial Assistant (NEW!)
+
+CashFlow API now includes an intelligent AI assistant powered by OpenAI's GPT-4o-mini that understands your financial data and answers questions in natural language.
+
+**Key Features:**
+- **Natural Language Queries** - Ask questions about your finances in plain English/Portuguese
+- **Context-Aware Analysis** - AI analyzes your actual transaction data to provide accurate answers
+- **Conversation History** - All chats are saved with timestamps for future reference
+- **Smart Data Retrieval** - Automatically fetches relevant financial data (categories, transactions, totals)
+- **Markdown Cleaning** - Custom cleaner removes 95% of AI formatting for clean text output
+
+**Markdown Cleaner (95% Coverage):**
+Our custom text processing utility ensures AI responses are clean and frontend-ready:
+- ✅ Removes `**bold**`, `*italic*`, `~~strikethrough~~`
+- ✅ Removes `# headers` and `> blockquotes`
+- ✅ Converts `- lists` to `• bullet points`
+- ✅ Removes ` ```code blocks``` ` and `` `inline code` ``
+- ✅ Cleans `[links](url)` to plain text
+- ✅ Preserves line breaks (`\n\n`) for readability
+- ✅ Removes HTML tags and excess whitespace
+- ✅ Output is plain text ready for any frontend
+
+**Example Queries:**
+```
+"How much did I spend this month?"
+"What are my top 3 expense categories?"
+"Show me my income vs expenses"
+"Analyze my spending on food"
+"What's my current balance?"
+```
 ---
 
-## 📚 API Documentation
+### 📚 API Endpoints
 
-### Complete Endpoint List (20 Endpoints)
+#### 🔐 Authentication (5 endpoints)
+- `POST /api/v1/auth/register` - Create new user account
+- `POST /api/v1/auth/login` - Authenticate and get JWT token
+- `POST /api/v1/auth/refresh` - Refresh expired token
+- `GET /api/v1/auth/me` - Get current user profile
+- `PUT /api/v1/auth/me` - Update user profile
 
-### 🔐 Authentication (5 endpoints)
+#### 📂 Categories (5 endpoints)
+- `POST /api/v1/categories` - Create new category
+- `GET /api/v1/categories` - List all categories (with pagination)
+- `GET /api/v1/categories/{id}` - Get specific category
+- `PUT /api/v1/categories/{id}` - Update category
+- `DELETE /api/v1/categories/{id}` - Soft delete category
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/v1/auth/register` | Register new user | ❌ |
-| POST | `/api/v1/auth/login` | Login and get JWT token | ❌ |
-| GET | `/api/v1/auth/me` | Get current user info | ✅ |
-| PUT | `/api/v1/auth/me` | Update current user profile | ✅ |
-| DELETE | `/api/v1/auth/me` | Soft delete account (IRREVERSIBLE) | ✅ |
+#### 💸 Transactions (6 endpoints)
+- `POST /api/v1/transactions` - Create new transaction (income/expense)
+- `GET /api/v1/transactions` - List all transactions (filterable by date/category/type)
+- `GET /api/v1/transactions/{id}` - Get specific transaction
+- `PUT /api/v1/transactions/{id}` - Update transaction
+- `DELETE /api/v1/transactions/{id}` - Soft delete transaction
+- `GET /api/v1/transactions/summary` - Quick statistics
 
-### 📁 Categories (5 endpoints)
+#### 📊 Reports (4 endpoints)
+- `GET /api/v1/reports/statistics` - Overall financial statistics
+- `GET /api/v1/reports/by-category` - Breakdown by category
+- `GET /api/v1/reports/trends` - Monthly/weekly trends
+- `GET /api/v1/reports/summary` - Daily averages
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/categories/` | List user's categories | ✅ |
-| POST | `/api/v1/categories/` | Create new category | ✅ |
-| GET | `/api/v1/categories/{id}` | Get category details | ✅ |
-| PUT | `/api/v1/categories/{id}` | Update category | ✅ |
-| DELETE | `/api/v1/categories/{id}` | Delete category | ✅ |
+#### 🤖 AI Chat (3 endpoints - NEW!)
+- `POST /api/v1/ai/chat` - Ask AI about your finances
+- `GET /api/v1/ai/history` - Retrieve conversation history (limit: 10-50)
+- `DELETE /api/v1/ai/history/{id}` - Delete specific conversation
 
-### 💰 Transactions (6 endpoints)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/transactions/` | List transactions (with filters) | ✅ |
-| POST | `/api/v1/transactions/` | Create transaction | ✅ |
-| GET | `/api/v1/transactions/statistics` | Get financial statistics | ✅ |
-| DELETE | `/api/v1/transactions/{id}` | Soft delete transaction | ✅ |
-| GET | `/api/v1/transactions/{id}` | Get transaction details | ✅ |
-| PUT | `/api/v1/transactions/{id}` | Update transaction | ✅ |
-
-### 📊 Reports (4 endpoints)
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/v1/reports/summary` | Financial summary with averages | ✅ |
-| GET | `/api/v1/reports/by-category` | Breakdown by category | ✅ |
-| GET | `/api/v1/reports/monthly` | Monthly financial trends | ✅ |
-| GET | `/api/v1/reports/trends` | Daily/weekly/monthly trends | ✅ |
+**Total: 23 endpoints**
 
 ### 📖 Detailed Examples
 
@@ -396,6 +478,49 @@ Response:
 }
 ```
 
+### 🤖 Example: AI Chat Query
+
+**Request:**
+```http
+POST /api/v1/ai/chat
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "message": "How much did I spend on food this month?"
+}
+```
+
+**Response:**
+```json
+{
+  "reply": "You spent $330.50 on food this month. Your largest expense was $150.50 at the supermarket. This represents 33% of your total monthly expenses.",
+  "data": {
+    "total_spent": 330.50,
+    "category": "Food & Drinks",
+    "transaction_count": 12
+  },
+  "sql_query": "SELECT SUM(amount) FROM transactions WHERE category_id=... AND date>=..."
+}
+```
+
+**Get Chat History:**
+```http
+GET /api/v1/ai/history?limit=10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "question": "How much did I spend on food this month?",
+    "response": "You spent $330.50 on food this month...",
+    "created_at": "2025-12-18T10:30:00Z"
+  }
+]
+```
 ---
 
 ## 📸 Screenshots

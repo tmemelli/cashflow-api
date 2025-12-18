@@ -23,6 +23,7 @@ from app.models.chat import Chat
 from app.models.transaction import Transaction
 from app.models.category import Category
 from sqlalchemy import func
+from app.utils.markdown_cleaner import clean_markdown
 
 
 class AIService:
@@ -288,11 +289,28 @@ Recent Transactions:
 
 Instructions:
 1. Answer the user's question based on the data above
-2. Be concise and friendly
+2. Be concise and friendly in a conversational tone
 3. Use specific numbers from the data
 4. If the question cannot be answered with available data, explain what's missing
 5. Format currency as $X,XXX.XX
 6. Provide actionable insights when appropriate
+
+CRITICAL FORMATTING RULES:
+7. Write in plain text format suitable for chat conversation
+8. DO NOT use Markdown formatting like **, ###, -, bullets, or any markup
+9. Use natural language with proper punctuation and spacing
+10. Instead of lists with dashes, use natural sentences with commas
+11. Instead of bold text (**text**), just write normally
+12. Instead of headers (###), just use capitalized sentences
+13. Keep responses conversational and easy to read in a simple chat interface
+
+Example of GOOD response format:
+"You spent $1,001.75 in total. This breaks down as: Alimentação $330.50, Mercados $285.50, Transporte $320.75, and Entretenimento $65.00. Compared to your income of $8,000.00, you're spending about 12.5%, which is excellent. You're doing great with your finances!"
+
+Example of BAD response format (DO NOT DO THIS):
+"### Resumo
+- **Total:** $1,001.75
+- **Alimentação:** $330.50"
 """
         
         # Call OpenAI API
@@ -394,10 +412,13 @@ Instructions:
             This ensures audit trail is preserved.
         """
         
+        # 🧹 CLEAN MARKDOWN FROM THE RESPONSE
+        clean_response = clean_markdown(response)
+
         chat = Chat(
             user_id=user.id,
             question=question,
-            response=response,
+            response=clean_response,
             sql_query=sql_query,
             was_successful=was_successful,
             error_message=error_message

@@ -14,12 +14,12 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.123.7-009688.svg)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0.44-red.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status](https://img.shields.io/badge/Status-Pronto%20para%20Produ%C3%A7%C3%A3o-success.svg)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)
 
-Uma API RESTful profissional para gestão financeira pessoal, construída com tecnologias modernas Python e melhores práticas.
+Uma API RESTful profissional para gerenciamento financeiro pessoal, construída com tecnologias Python modernas e melhores práticas.
 
 **Autor:** Thiago Memelli  
-**Primeiro Projeto de API em Python** - Demonstrando arquitetura limpa, práticas de segurança e testes abrangentes.
+**Primeiro Projeto de API Python** - Demonstrando arquitetura limpa, práticas de segurança e testes abrangentes.
 
 ---
 
@@ -27,14 +27,14 @@ Uma API RESTful profissional para gestão financeira pessoal, construída com te
 
 - [Visão Geral](#-visão-geral)
 - [Funcionalidades](#-funcionalidades)
-- [Tecnologias](#-tecnologias)
-- [Arquitetura](#-arquitetura)
+- [Tecnologias](#️-tecnologias)
+- [Arquitetura](#️-arquitetura)
 - [Instalação](#-instalação)
 - [Uso](#-uso)
 - [Documentação da API](#-documentação-da-api)
 - [Screenshots](#-screenshots)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Histórico de Versões](#-histórico-de-versões)
+- [Changelog](#-changelog)
 - [Melhorias Futuras](#-melhorias-futuras)
 - [Autor](#-autor)
 
@@ -42,9 +42,9 @@ Uma API RESTful profissional para gestão financeira pessoal, construída com te
 
 ## 🎯 Visão Geral
 
-CashFlow API é um sistema completo de gestão financeira que permite aos usuários:
+CashFlow API é um sistema completo de gerenciamento financeiro que permite aos usuários:
 - Rastrear receitas e despesas com categorização detalhada
-- Gerar relatórios e estatísticas financeiras abrangentes
+- Gerar relatórios financeiros abrangentes e estatísticas
 - Analisar padrões de gastos por categoria
 - Monitorar tendências financeiras mensais
 - Manter autenticação segura de usuários com tokens JWT
@@ -56,49 +56,101 @@ Este projeto demonstra **código pronto para produção** com:
 - ✅ Autenticação e autorização baseada em JWT
 - ✅ Padrão de exclusão suave (preservação de dados)
 - ✅ Documentação detalhada da API (OpenAPI/Swagger)
-- ✅ Segurança de tipos com schemas Pydantic
+- ✅ Segurança de tipo com schemas Pydantic
 
 ---
 
 ## ✨ Funcionalidades
 
-### 🔐 Autenticação & Segurança
+### 🔐 Autenticação e Segurança
 - **Autenticação por Token JWT** - Acesso seguro a endpoints protegidos
-- **Hash de Senhas** - Criptografia Bcrypt para senhas de usuários
+- **Hash de Senha** - Criptografia Bcrypt para senhas de usuário
 - **Expiração de Token** - Timeout de sessão configurável
-- **Autorização de Usuário** - Controle de permissões em nível de endpoint
+- **Autorização de Usuário** - Controle de permissão em nível de endpoint
 
-### � Gerenciamento de Perfil do Usuário
-- **Campo Nome Completo** - Identificação obrigatória do usuário (1-150 caracteres)
+### 👤 Gerenciamento de Perfil de Usuário
+- **Campo de Nome Completo** - Identificação de usuário obrigatória (1-150 caracteres)
 - **Rastreamento de Status da Conta** - Flags is_active, is_superuser, is_deleted
 - **Separação Inteligente de Timestamps** - Abordagem padrão da indústria para trilhas de auditoria:
   - `created_at` - Timestamp de criação da conta (gerado automaticamente no registro)
   - `updated_at` - Timestamp de modificação do perfil (atualizado apenas quando dados do usuário mudam)
-  - `last_login_at` - Rastreamento de autenticação (atualizado apenas no login bem-sucedido)
-- **Implementação de Timestamps** - Usa atualizações SQL diretas para prevenir efeitos colaterais indesejados:
+  - `last_login_at` - Rastreamento de autenticação (atualizado apenas em login bem-sucedido)
+- **Implementação de Timestamp** - Usa atualizações SQL diretas para prevenir efeitos colaterais indesejados:
   - Login atualiza `last_login_at` via `db.execute()` sem acionar `updated_at`
   - Atualizações de perfil modificam `updated_at` manualmente na camada CRUD
-  - Demonstra compreensão do comportamento do ORM e práticas de produção
+  - Demonstra compreensão do comportamento do ORM e melhores práticas de produção
 - **Endpoint de Perfil Self-Service** - Usuários atualizam seus próprios dados via `/me` (identificação baseada em token)
 
-### �📊 Gestão Financeira
-- **Tipos Duplos de Transação** - Rastreamento de Receitas e Despesas
+### 📊 Gerenciamento Financeiro
+- **Tipos de Transação Duplos** - Rastreamento de Receitas e Despesas
 - **Sistema de Categorias** - Organize transações por categorias personalizadas ou padrão
 - **Exclusão Suave** - Transações são marcadas como excluídas, não removidas permanentemente (trilha de auditoria)
 - **Filtragem por Intervalo de Datas** - Consulte transações por períodos específicos
 
-### 📈 Análises & Relatórios
+### 📈 Análises e Relatórios
 - **Estatísticas Financeiras** - Cálculo em tempo real de totais, saldo e contagem de transações
-- **Relatórios de Resumo** - Médias diárias de receitas, despesas e transações
-- **Detalhamento por Categoria** - Análise de gastos/receitas por categoria com percentuais
+- **Relatórios Resumidos** - Médias diárias para receitas, despesas e transações
+- **Detalhamento por Categoria** - Análise de gastos/receitas por categoria com porcentagens
 - **Tendências Mensais** - Dados financeiros históricos agrupados por mês
 - **Análise de Tendências** - Opções de agregação diária, semanal ou mensal
 
 ### 🛡️ Integridade de Dados
-- **Camada de Validação** - Schemas Pydantic garantem correção dos dados
-- **Segurança de Tipos** - Enums para tipos de transação e categoria
+- **Camada de Validação** - Schemas Pydantic garantem correção de dados
+- **Segurança de Tipo** - Enums para tipos de transação e categoria
 - **Restrições de Chave Estrangeira** - Integridade referencial no banco de dados
 - **Timestamps Automáticos** - Rastreie tempos de criação e atualização
+
+### 🤖 Assistente Financeiro Alimentado por IA (NOVO!)
+
+A CashFlow API agora inclui um assistente de IA inteligente alimentado pelo GPT-4o-mini da OpenAI que entende seus dados financeiros e responde perguntas em linguagem natural.
+
+**Recursos Principais:**
+- **Consultas em Linguagem Natural** - Faça perguntas sobre suas finanças em português ou inglês simples
+- **Análise Sensível ao Contexto** - A IA analisa seus dados de transação reais para fornecer respostas precisas
+- **Histórico de Conversas** - Todos os chats são salvos com timestamps para referência futura
+- **Recuperação Inteligente de Dados** - Busca automaticamente dados financeiros relevantes (categorias, transações, totais)
+- **Limpeza de Markdown** - Limpador personalizado remove 95% da formatação de IA para saída de texto limpa
+
+**Limpador de Markdown (95% de Cobertura):**
+Nosso utilitário de processamento de texto personalizado garante que as respostas da IA sejam limpas e prontas para frontend:
+- ✅ Remove `**negrito**`, `*itálico*`, `~~tachado~~`
+- ✅ Remove `# cabeçalhos` e `> citações`
+- ✅ Converte `- listas` em `• marcadores`
+- ✅ Remove ` ```blocos de código``` ` e `` `código inline` ``
+- ✅ Limpa `[links](url)` para texto simples
+- ✅ Preserva quebras de linha (`\n\n`) para legibilidade
+- ✅ Remove tags HTML e espaços em branco excessivos
+- ✅ Saída é texto simples pronto para qualquer frontend
+
+**Exemplos de Consultas:**
+```
+"Quanto gastei este mês?"
+"Quais são minhas 3 principais categorias de despesas?"
+"Mostre-me minha receita vs despesas"
+"Analise meus gastos com comida"
+"Qual é meu saldo atual?"
+```
+
+**Como Funciona:**
+```
+Pergunta do Usuário → Serviço de IA → API OpenAI
+                         ↓
+           Buscar Dados Financeiros do Usuário
+                         ↓
+           Gerar Resposta Contextual
+                         ↓
+           Aplicar Limpador de Markdown (95%)
+                         ↓
+           Salvar no Histórico de Chat
+                         ↓
+           Retornar Texto Limpo ao Usuário
+```
+
+**Implementação Técnica:**
+- **Camada de Serviço**: `app/services/ai_service.py` - Orquestra interações de IA
+- **Processamento de Texto**: `app/utils/markdown_cleaner.py` - 17 regras de limpeza
+- **Modelo de Dados**: `app/models/chat.py` - Armazenamento de histórico de conversas
+- **Endpoints**: 3 novas rotas em `app/api/v1/endpoints/ai_chat.py`
 
 ---
 
@@ -107,20 +159,21 @@ Este projeto demonstra **código pronto para produção** com:
 | Tecnologia | Versão | Propósito |
 |------------|---------|-----------|
 | **Python** | 3.11+ | Linguagem de programação principal |
-| **FastAPI** | 0.123.7 | Framework web assíncrono moderno |
+| **FastAPI** | 0.123.7 | Framework web async moderno |
 | **SQLAlchemy** | 2.0.44 | ORM para operações de banco de dados |
 | **Pydantic** | 2.12.5 | Validação de dados e configurações |
 | **JWT (python-jose)** | 3.5.0 | Autenticação baseada em token |
-| **Bcrypt** | 4.0.1 | Hash de senhas |
+| **Bcrypt** | 4.0.1 | Hash de senha |
 | **Uvicorn** | 0.38.0 | Servidor ASGI |
 | **SQLite** | 3 | Banco de dados leve (desenvolvimento) |
+| **OpenAI API** | 2.9.0 | Assistente de chat alimentado por IA |
 
 ### Por Que Essas Tecnologias?
 
-- **FastAPI**: Documentação automática da API, alto desempenho, suporte async
-- **SQLAlchemy**: ORM agnóstico de banco de dados, suporta migração para PostgreSQL
+- **FastAPI**: Documentação automática de API, alto desempenho, suporte async
+- **SQLAlchemy**: ORM agnóstico de banco de dados, suporta migração PostgreSQL
 - **Pydantic**: Verificação de tipo em tempo de execução, validação automática
-- **JWT**: Autenticação sem estado, escalável para sistemas distribuídos
+- **JWT**: Autenticação stateless, escalável para sistemas distribuídos
 
 ---
 
@@ -130,28 +183,36 @@ Este projeto demonstra **código pronto para produção** com:
 
 ```
 app/
-├── api/                   # Camada de API (Controllers)
-│   ├── deps.py            # Injeção de dependência
+├── api/                    # Camada de API (Controllers)
+│   ├── deps.py             # Injeção de dependência
 │   └── v1/
-│       ├── api.py         # Agregação de rotas
-│       └── endpoints/     # Manipuladores de rotas
-├── core/                  # Configuração Central
-│   ├── config.py          # Gerenciamento de configurações
-│   └── security.py        # Utilitários de autenticação
-├── crud/                  # Camada de Acesso a Dados
-│   ├── base.py            # Operações CRUD genéricas
-│   └── crud_*.py          # Operações específicas do modelo
-├── db/                    # Camada de Banco de Dados
-│   ├── base.py            # Registro de modelos
-│   └── session.py         # Conexão com BD
-├── models/                # Camada de Domínio (Modelos ORM)
+│       ├── api.py          # Agregação de rotas
+│       └── endpoints/      # Manipuladores de rotas
+├── core/                   # Configuração Principal
+│   ├── config.py           # Gerenciamento de configurações
+│   └── security.py         # Utilitários de autenticação
+├── crud/                   # Camada de Acesso a Dados
+│   ├── base.py             # Operações CRUD genéricas
+│   └── crud_*.py           # Operações específicas do modelo
+├── db/                     # Camada de Banco de Dados
+│   ├── base.py             # Registro de modelos
+│   └── session.py          # Conexão com BD
+├── models/                 # Camada de Domínio (Modelos ORM)
 │   ├── user.py
 │   ├── category.py
-│   └── transaction.py
-└── schemas/               # Camada de Apresentação (DTOs)
+│   ├── transaction.py
+│   └── chat.py
+├── services/               # Camada de Lógica de Negócios
+│   ├── __init__.py
+│   └── ai_service.py       # Integração e orquestração OpenAI
+├── utils/                  # Funções Utilitárias
+│   ├── __init__.py
+│   └── markdown_cleaner.py # Limpeza de texto (95% cobertura)
+└── schemas/                # Camada de Apresentação (DTOs)
     ├── user.py
     ├── category.py
-    └── transaction.py
+    ├── transaction.py
+    └── ai_chat.py
 ```
 
 ### Padrões de Design Utilizados
@@ -212,58 +273,54 @@ VERSION=1.0.0
 API_V1_STR=/api/v1
 
 # Configurações de Segurança
-SECRET_KEY=sua-chave-secreta-aqui-mudar-em-producao
+SECRET_KEY=sua-chave-secreta-aqui-mude-em-producao
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# Configurações do Banco de Dados
+# Configurações de Banco de Dados
 DATABASE_URL=sqlite:///./cashflow.db
+
+# Configurações OpenAI (para Recurso de Chat IA)
+OPENAI_API_KEY=sua-chave-api-openai-aqui-obtenha-em-platform.openai.com
+OPENAI_MODEL=gpt-4o-mini
 ```
 
-⚠️ **Importante**: Gere uma SECRET_KEY segura para produção:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-6. **Inicialize o banco de dados**
-```bash
-python create_db.py
-```
-
-7. **Execute o servidor**
+6. **Execute o servidor**
 ```bash
 uvicorn app.main:app --reload
 ```
 
-8. **Acesse a API**
-- API: http://localhost:8000
-- Documentação Interativa (Swagger): http://localhost:8000/docs
-- Documentação Alternativa (ReDoc): http://localhost:8000/redoc
+7. **Acesse a documentação**
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
 ---
 
 ## 🚀 Uso
 
-### Guia de Início Rápido
+### Fluxo de Autenticação
 
-#### 1️⃣ Registrar um Usuário
-```bash
+1. **Registrar um novo usuário**
+```http
 POST /api/v1/auth/register
+Content-Type: application/json
+
 {
   "email": "usuario@exemplo.com",
-  "password": "senhasegura123"
+  "password": "senhaSegura123",
+  "full_name": "Nome do Usuário"
 }
 ```
 
-#### 2️⃣ Fazer Login
-```bash
+2. **Fazer login e obter token JWT**
+```http
 POST /api/v1/auth/login
-{
-  "username": "usuario@exemplo.com",
-  "password": "senhasegura123"
-}
+Content-Type: application/x-www-form-urlencoded
+
+username=usuario@exemplo.com&password=senhaSegura123
 ```
-Resposta:
+
+**Resposta:**
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -271,321 +328,285 @@ Resposta:
 }
 ```
 
-#### 3️⃣ Usar o Token
-
-Adicione aos cabeçalhos da requisição:
+3. **Usar token em requisições protegidas**
+```http
+GET /api/v1/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
-Authorization: Bearer <seu-access-token>
-```
 
-Ou use o botão "Authorize" no Swagger UI.
+### Gerenciar Categorias
 
-#### 4️⃣ Criar uma Categoria
-```bash
+**Criar categoria:**
+```http
 POST /api/v1/categories/
+Authorization: Bearer <token>
+Content-Type: application/json
+
 {
-  "name": "Salário",
-  "type": "income"
+  "name": "Alimentação",
+  "type": "expense",
+  "description": "Despesas relacionadas a alimentação"
 }
 ```
 
-#### 5️⃣ Criar uma Transação
-```bash
+### Criar Transações
+
+**Adicionar despesa:**
+```http
 POST /api/v1/transactions/
+Authorization: Bearer <token>
+Content-Type: application/json
+
 {
-  "type": "income",
-  "amount": 5000.00,
-  "description": "Salário mensal",
-  "date": "2025-12-01",
-  "category_id": 1
+  "amount": 50.00,
+  "description": "Almoço",
+  "category_id": 1,
+  "transaction_type": "expense",
+  "date": "2025-12-18"
 }
 ```
 
-#### 6️⃣ Ver Estatísticas
-```bash
-GET /api/v1/transactions/statistics
+### Gerar Relatórios
+
+**Obter estatísticas financeiras:**
+```http
+GET /api/v1/reports/statistics?start_date=2025-12-01&end_date=2025-12-31
+Authorization: Bearer <token>
 ```
 
-#### 7️⃣ Atualizar Seu Perfil
-```bash
-PUT /api/v1/auth/me
+### Chat com IA (NOVO!)
+
+**Fazer pergunta à IA:**
+```http
+POST /api/v1/ai/chat
+Authorization: Bearer <token>
+Content-Type: application/json
+
 {
-  "full_name": "Thiago Memelli Atualizado",
-  "email": "novoemail@exemplo.com"
+  "message": "Quanto gastei com comida este mês?"
 }
 ```
 
-**Nota:** Isso atualiza o timestamp `updated_at` mas NÃO o `last_login_at` (separação inteligente de timestamps).
+**Resposta:**
+```json
+{
+  "reply": "Você gastou R$ 330,50 com comida este mês. Seu maior gasto foi R$ 150,50 no supermercado.",
+  "data": {...},
+  "sql_query": "..."
+}
+```
+
+**Obter histórico de chat:**
+```http
+GET /api/v1/ai/history?limit=10
+Authorization: Bearer <token>
+```
+
+**Deletar conversa específica:**
+```http
+DELETE /api/v1/ai/history/{chat_id}
+Authorization: Bearer <token>
+```
 
 ---
 
 ## 📚 Documentação da API
 
-### Lista Completa de Endpoints (20 endpoints)
+### 📚 Endpoints da API
 
-### 🔐 Autenticação (5 endpoints)
+#### 🔐 Autenticação (5 endpoints)
+- `POST /api/v1/auth/register` - Criar nova conta de usuário
+- `POST /api/v1/auth/login` - Autenticar e obter token JWT
+- `POST /api/v1/auth/refresh` - Atualizar token expirado
+- `GET /api/v1/auth/me` - Obter perfil do usuário atual
+- `PUT /api/v1/auth/me` - Atualizar perfil do usuário
 
-| Método | Endpoint | Descrição | Auth Necessária |
-|--------|----------|-----------|------------------|
-| POST | `/api/v1/auth/register` | Registrar novo usuário | ❌ |
-| POST | `/api/v1/auth/login` | Login e obter token JWT | ❌ |
-| GET | `/api/v1/auth/me` | Obter informações do usuário atual | ✅ |
-| PUT | `/api/v1/auth/me` | Atualizar perfil do usuário atual | ✅ |
-| DELETE | `/api/v1/auth/me` | Excluir conta (IRREVERSÍVEL) | ✅ |
+#### 📂 Categorias (5 endpoints)
+- `POST /api/v1/categories` - Criar nova categoria
+- `GET /api/v1/categories` - Listar todas as categorias (com paginação)
+- `GET /api/v1/categories/{id}` - Obter categoria específica
+- `PUT /api/v1/categories/{id}` - Atualizar categoria
+- `DELETE /api/v1/categories/{id}` - Exclusão suave de categoria
 
-### 📁 Categorias (5 endpoints)
+#### 💸 Transações (6 endpoints)
+- `POST /api/v1/transactions` - Criar nova transação (receita/despesa)
+- `GET /api/v1/transactions` - Listar todas as transações (filtrável por data/categoria/tipo)
+- `GET /api/v1/transactions/{id}` - Obter transação específica
+- `PUT /api/v1/transactions/{id}` - Atualizar transação
+- `DELETE /api/v1/transactions/{id}` - Exclusão suave de transação
+- `GET /api/v1/transactions/summary` - Estatísticas rápidas
 
-| Método | Endpoint | Descrição | Auth Necessária |
-|--------|----------|-----------|-----------------|
-| GET | `/api/v1/categories/` | Listar categorias do usuário | ✅ |
-| POST | `/api/v1/categories/` | Criar nova categoria | ✅ |
-| GET | `/api/v1/categories/{id}` | Obter detalhes da categoria | ✅ |
-| PUT | `/api/v1/categories/{id}` | Atualizar categoria | ✅ |
-| DELETE | `/api/v1/categories/{id}` | Deletar categoria | ✅ |
+#### 📊 Relatórios (4 endpoints)
+- `GET /api/v1/reports/statistics` - Estatísticas financeiras gerais
+- `GET /api/v1/reports/by-category` - Detalhamento por categoria
+- `GET /api/v1/reports/trends` - Tendências mensais/semanais
+- `GET /api/v1/reports/summary` - Médias diárias
 
-### 💰 Transações (6 endpoints)
+#### 🤖 Chat IA (3 endpoints - NOVO!)
+- `POST /api/v1/ai/chat` - Perguntar à IA sobre suas finanças
+- `GET /api/v1/ai/history` - Recuperar histórico de conversas (limite: 10-50)
+- `DELETE /api/v1/ai/history/{id}` - Deletar conversa específica
 
-| Método | Endpoint | Descrição | Auth Necessária |
-|--------|----------|-----------|-----------------|
-| GET | `/api/v1/transactions/` | Listar transações (com filtros) | ✅ |
-| POST | `/api/v1/transactions/` | Criar transação | ✅ |
-| GET | `/api/v1/transactions/statistics` | Obter estatísticas financeiras | ✅ |
-| DELETE | `/api/v1/transactions/{id}` | Exclusão suave de transação | ✅ |
-| GET | `/api/v1/transactions/{id}` | Obter detalhes da transação | ✅ |
-| PUT | `/api/v1/transactions/{id}` | Atualizar transação | ✅ |
+**Total: 23 endpoints**
 
-### 📊 Relatórios (4 endpoints)
+---
 
-| Método | Endpoint | Descrição | Auth Necessária |
-|--------|----------|-----------|-----------------|
-| GET | `/api/v1/reports/summary` | Resumo financeiro com médias | ✅ |
-| GET | `/api/v1/reports/by-category` | Detalhamento por categoria | ✅ |
-| GET | `/api/v1/reports/monthly` | Tendências financeiras mensais | ✅ |
-| GET | `/api/v1/reports/trends` | Tendências diárias/semanais/mensais | ✅ |
+### Documentação Interativa
 
-### 📖 Exemplos Detalhados
+A API inclui documentação interativa completa acessível através de:
 
-#### Obter Transações com Filtros
-```bash
-GET /api/v1/transactions/?start_date=2025-01-01&end_date=2025-01-31&transaction_type=expense
-```
+- **Swagger UI** (`/docs`): Interface interativa para testar endpoints
+- **ReDoc** (`/redoc`): Documentação alternativa focada em legibilidade
 
-#### Obter Detalhamento por Categoria
-```bash
-GET /api/v1/reports/by-category?start_date=2025-01-01&transaction_type=expense
-```
-
-Resposta:
-```json
-{
-  "period": {
-    "start_date": "2025-01-01",
-    "end_date": "2025-01-31"
-  },
-  "by_category": [
-    {
-      "category_id": 1,
-      "category_name": "Alimentação",
-      "category_type": "expense",
-      "total_amount": "850.50",
-      "transaction_count": 12,
-      "percentage": 24.3
-    }
-  ],
-  "total": "3500.50"
-}
-```
+**Recursos:**
+- Testar todos os endpoints diretamente do navegador
+- Exemplos de requisição/resposta
+- Schemas de dados detalhados
+- Documentação de autenticação
+- Descrições de códigos de erro
 
 ---
 
 ## 📸 Screenshots
 
-### Servidor Executando
-![Servidor Executando](docs/screenshots/01-servidor-rodando.png)
+A pasta `docs/screenshots/` contém 26+ screenshots mostrando:
 
-### Swagger UI - Documentação da API
-![Swagger Home](docs/screenshots/02-swagger-home-parte1.png)
+1-10: Operações CRUD de categorias
+11-16: Gerenciamento de transações e relatórios
+17-26: Recursos de gerenciamento de perfil de usuário
+27+: Recursos de chat IA e limpeza de Markdown
 
-### Registro de Usuário
-![Registro](docs/screenshots/03-auth-register.png)
-
-### Login com Token JWT
-![Login](docs/screenshots/04-auth-login.png)
-
-### Gestão de Categorias
-![Categorias](docs/screenshots/09-categories-list.png)
-
-### Lista de Transações
-![Transações](docs/screenshots/12-transactions-list.png)
-
-### Estatísticas Financeiras
-![Estatísticas](docs/screenshots/13-statistics.png)
-
-### Relatórios - Resumo
-![Relatório de Resumo](docs/screenshots/14-reports-summary.png)
-
-### Relatórios - Por Categoria
-![Relatório por Categoria](docs/screenshots/15-reports-by-category.png)
-
-### Estrutura do Banco de Dados
-![Banco de Dados](docs/screenshots/16-database-tables.png)
+Para ver todas as screenshots: [docs/screenshots/](./docs/screenshots/)
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 cashflow-api/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py                 # Ponto de entrada da aplicação FastAPI
+│   ├── main.py                      # Aplicação FastAPI
 │   ├── api/
-│   │   ├── __init__.py
-│   │   ├── deps.py             # Dependências compartilhadas (auth, db)
+│   │   ├── deps.py                  # Injeção de dependência
 │   │   └── v1/
-│   │       ├── __init__.py
-│   │       ├── api.py          # Agregação de rotas
+│   │       ├── api.py               # Agregador de rotas
 │   │       └── endpoints/
-│   │           ├── __init__.py
-│   │           ├── auth.py     # Endpoints de autenticação
-│   │           ├── categories.py
-│   │           ├── transactions.py
-│   │           └── reports.py
+│   │           ├── auth.py          # Endpoints de autenticação
+│   │           ├── categories.py    # Endpoints de categorias
+│   │           ├── transactions.py  # Endpoints de transações
+│   │           ├── reports.py       # Endpoints de relatórios
+│   │           └── ai_chat.py       # Endpoints de chat IA (NOVO)
 │   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py           # Gerenciamento de configurações
-│   │   └── security.py         # Utilitários JWT & senha
+│   │   ├── config.py                # Configurações
+│   │   └── security.py              # Utilitários JWT/Auth
 │   ├── crud/
-│   │   ├── __init__.py
-│   │   ├── base.py             # CRUD genérico com TypeVars
-│   │   ├── crud_user.py
-│   │   ├── crud_category.py
-│   │   └── crud_transaction.py
+│   │   ├── base.py                  # Operações CRUD genéricas
+│   │   ├── crud_user.py             # Operações de usuário
+│   │   ├── crud_category.py         # Operações de categoria
+│   │   └── crud_transaction.py      # Operações de transação
 │   ├── db/
-│   │   ├── __init__.py
-│   │   ├── base.py             # Importações de modelos para SQLAlchemy
-│   │   ├── session.py          # Engine e sessão do banco de dados
-│   │   └── init_db.py          # Inicialização do BD (uso futuro)
+│   │   ├── base.py                  # Registro de modelos
+│   │   └── session.py               # Configuração de BD
 │   ├── models/
+│   │   ├── user.py                  # Modelo de usuário
+│   │   ├── category.py              # Modelo de categoria
+│   │   ├── transaction.py           # Modelo de transação
+│   │   └── chat.py                  # Modelo de chat IA (NOVO)
+│   ├── services/
 │   │   ├── __init__.py
-│   │   ├── user.py             # Modelo ORM User
-│   │   ├── category.py         # Modelo ORM Category
-│   │   └── transaction.py      # Modelo ORM Transaction
+│   │   └── ai_service.py            # Integração OpenAI (NOVO)
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   └── markdown_cleaner.py      # Limpeza de texto (NOVO)
 │   └── schemas/
-│       ├── __init__.py
-│       ├── user.py             # Schemas Pydantic User
-│       ├── category.py         # Schemas Pydantic Category
-│       └── transaction.py      # Schemas Pydantic Transaction
+│       ├── user.py                  # Schemas de usuário
+│       ├── category.py              # Schemas de categoria
+│       ├── transaction.py           # Schemas de transação
+│       └── ai_chat.py               # Schemas de chat IA (NOVO)
 ├── docs/
-│   └── screenshots/            # Screenshots dos testes da API
-├── tests/                      # Testes unitários & integração (futuro)
-├── .env                        # Variáveis de ambiente
-├── .env.example                # Arquivo de exemplo de ambiente
-├── .gitignore
-├── create_db.py                # Script de inicialização do banco de dados
-├── requirements.txt            # Dependências Python
-└── README.md                   # Este arquivo
+│   ├── screenshots/                 # Screenshots da API
+│   └── CHANGELOG.md                 # Histórico de versões
+├── migrations/                      # Migrações de banco de dados
+├── .env                             # Variáveis de ambiente
+├── .env.example                     # Modelo de variáveis de ambiente
+├── .gitignore                       # Exclusões do Git
+├── requirements.txt                 # Dependências Python
+├── README.md                        # Documentação (Inglês)
+└── README.pt-BR.md                  # Documentação (Português)
 ```
 
-### Arquivos-Chave Explicados
+---
 
-- **`main.py`**: Inicialização do app FastAPI, CORS, configuração OpenAPI
-- **`deps.py`**: Injeção de dependência (sessão BD, usuário atual)
-- **`base.py` (crud)**: Operações CRUD genéricas usando generics Python
-- **`security.py`**: Codificação/decodificação JWT, hash de senhas
-- **`config.py`**: Pydantic Settings para variáveis de ambiente
-- **`base.py` (db)**: Ponto central de importação para todos os modelos (suporte Alembic)
+## 📝 Changelog
+
+Para histórico detalhado de mudanças, consulte [CHANGELOG.md](./docs/CHANGELOG.md)
+
+### Destaques da Versão Atual
+
+**v1.2.0** (2025-12-18):
+- 🤖 Adicionado recurso de Chat IA com integração OpenAI
+- 🧹 Implementado Limpador de Markdown (95% de cobertura)
+- 📊 3 novos endpoints para interação com IA
+- 🏗️ Adicionadas camadas `services/` e `utils/`
+
+**v1.1.0** (2025-12-15):
+- 👤 Gerenciamento de perfil de usuário aprimorado
+- ⏰ Sistema de timestamp inteligente
+- 🔒 Endpoint de exclusão suave de conta
+
+**v1.0.0** (2025-12-01):
+- 🎉 Lançamento inicial com recursos principais
 
 ---
-## 📝 Histórico de Versões
 
-### Versão 1.1.0 (15 de Dezembro de 2025)
+## 🔮 Melhorias Futuras
 
-**✨ Novos Recursos:**
-- Gerenciamento de Perfil do Usuário com separação inteligente de timestamps
-- Endpoint PUT `/api/v1/auth/me` para atualizações self-service de perfil
-- Campo nome completo adicionado ao registro de usuário
+### Em Consideração
 
-**🔧 Melhorias Técnicas:**
-- Implementado padrão de trilha de auditoria usado pela indústria
-- Atualizações SQL diretas para prevenir efeitos colaterais do ORM
-- Controle manual de timestamps na camada CRUD
-
-**📚 Documentação:**
-- Changelog abrangente ([docs/CHANGELOG.md](docs/CHANGELOG.md))
-- Guia detalhado da feature ([docs/USER_PROFILE_FEATURE.md](docs/USER_PROFILE_FEATURE.md))
-- Novos screenshots mostrando comportamento de timestamps (17-23)
-
-**Para detalhes completos**, veja [CHANGELOG.md](docs/CHANGELOG.md)
-
----
-## 🚧 Melhorias Futuras
-
-### Funcionalidades Planejadas
-
-#### 🔒 Segurança Aprimorada
-- [ ] Limitação de taxa para prevenir ataques de força bruta
+#### 🔐 Autenticação Avançada
 - [ ] Login social OAuth2 (Google, GitHub)
 - [ ] Autenticação de dois fatores (2FA)
-- [ ] Autenticação por chave API para integrações de terceiros
+- [ ] Autenticação por chave de API para integrações de terceiros
 - [ ] Controle de acesso baseado em funções (RBAC) para sistemas multiusuário
 
-#### 📊 Funcionalidades Avançadas
-- [ ] **Gestão de Orçamento** - Definir orçamentos mensais por categoria
+#### 📊 Recursos Avançados
+- [ ] **Gerenciamento de Orçamento** - Definir orçamentos mensais por categoria
 - [ ] **Transações Recorrentes** - Automatizar contas/receitas mensais
-- [ ] **Suporte Multi-moedas** - Rastrear despesas em diferentes moedas
-- [ ] **Anexos de Arquivos** - Upload de recibos/faturas
+- [ ] **Suporte Multi-moeda** - Rastrear despesas em diferentes moedas
+- [ ] **Anexos de Arquivo** - Upload de recibos/faturas
 - [ ] **Exportar Relatórios** - Geração de PDF/Excel
-- [ ] **Notificações por E-mail** - Alertas de orçamento, resumos
+- [ ] **Notificações por Email** - Alertas de orçamento, resumos
 
-#### 🗄️ Banco de Dados & Infraestrutura
+#### 🗄️ Banco de Dados e Infraestrutura
 - [ ] **Migração PostgreSQL** - Banco de dados pronto para produção
-- [ ] **Seeding de Banco de Dados** - Implementar `init_db.py` com categorias padrão:
-  ```python
-  # Categorias de Receita Padrão
-  - Salário, Freelance, Investimentos, Presentes, Bônus
-  
-  # Categorias de Despesa Padrão
-  - Alimentação, Transporte, Moradia, Saúde, Entretenimento, Educação, Utilidades
-  ```
-- [ ] **Migrações Alembic** - Controle de versão do banco de dados
-- [ ] **Cache Redis** - Melhorar desempenho da geração de relatórios
-- [ ] **Suporte Docker** - Containerização para fácil implantação
+- [ ] **Seeding de Banco de Dados** - Implementar `init_db.py` com categorias padrão
+- [ ] **Migrações Alembic** - Controle de versão de banco de dados
+- [ ] **Cache Redis** - Melhorar desempenho de geração de relatórios
+- [ ] **Suporte Docker** - Containerização para implantação fácil
 
-#### 🧪 Testes & Qualidade
-- [ ] **Testes Unitários** - 80%+ cobertura de código com pytest
-- [ ] **Testes de Integração** - Testes completos de endpoints
-- [ ] **Testes de Carga** - Benchmarks de desempenho com Locust
-- [ ] **Pipeline CI/CD** - GitHub Actions para testes/implantação automatizados
+#### 🧪 Testes e Qualidade
+- [ ] **Testes Unitários** - Cobertura de código de 80%+ com pytest
+- [ ] **Testes de Integração** - Teste completo de endpoints
+- [ ] **Teste de Carga** - Benchmarks de desempenho com Locust
+- [ ] **Pipeline CI/CD** - GitHub Actions para teste/implantação automatizados
 
-#### 📱 Frontend & UX
+#### 📱 Frontend e UX
 - [ ] **Dashboard React** - Interface web interativa
 - [ ] **App Mobile** - React Native ou Flutter
-- [ ] **Gráficos & Visualizações** - Gráficos de tendências de gastos
-- [ ] **Modo Escuro** - Suporte a temas na UI
+- [ ] **Gráficos e Visualizações** - Gráficos de tendências de gastos
+- [ ] **Modo Escuro** - Suporte a tema de UI
 
 #### 📖 Documentação
-- [ ] **Coleção Postman** - Requisições API pré-configuradas
+- [ ] **Coleção Postman** - Requisições de API pré-configuradas
 - [ ] **Tutorial em Vídeo** - Guia de configuração e uso
 - [ ] **Versionamento de API** - Suporte para endpoints v2, v3
 
-#### ⚡ Desempenho
-- [ ] **Otimização de Consultas** - Estratégia de indexação do banco de dados
-- [ ] **Operações Assíncronas** - Implementação completa async/await
+#### ⚡ Performance
+- [ ] **Otimização de Consultas** - Estratégia de indexação de banco de dados
+- [ ] **Operações Assíncronas** - Implementação completa de async/await
 - [ ] **Paginação** - Paginação baseada em cursor para grandes conjuntos de dados
 - [ ] **API GraphQL** - Alternativa ao REST para consultas flexíveis
-
-### Parcialmente Implementado
-
-#### ✅ Inicialização do Banco de Dados (`init_db.py`)
-Atualmente contém código de estrutura para:
-- Criar categorias padrão do sistema
-- Fazer seed do usuário admin inicial
-- Popular dados de teste
-
-**Status**: Documentado mas comentado (pronto para implementação)
-
-**Por que não implementado ainda**: SQLAlchemy cria tabelas automaticamente na primeira requisição. Para MVP, criação manual de categorias via API é suficiente. Implantação em produção implementará esta funcionalidade.
 
 ---
 
@@ -593,27 +614,27 @@ Atualmente contém código de estrutura para:
 
 **Thiago Memelli**
 
-🎓 **Background**: Transição para Desenvolvimento Backend  
-💼 **Procurando por**: Posições de Desenvolvedor Backend Python / Desenvolvedor de APIs  
-📍 **Localização**: Vitória, ES - Brasil (Aberto a Remoto)  
-📧 **Contato**: tmemelli@gmail.com  
+🎓 **Background**: Transicionando para Desenvolvimento Backend  
+💼 **Procurando por**: Posições de Desenvolvedor Backend Python / Desenvolvedor de API  
+📍 **Localização**: [Vitória, ES - Brasil (Aberto para Remoto)]  
+📧 **Contato**: [tmemelli@gmail.com]  
 🔗 **LinkedIn**: [linkedin.com/in/thiagomemelli](https://linkedin.com/in/thiagomemelli)  
 🐙 **GitHub**: [github.com/tmemelli](https://github.com/tmemelli)
 
 ### Sobre Este Projeto
 
-Este é meu **primeiro projeto de API em Python**, construído do zero para demonstrar:
+Este é meu **primeiro projeto de API Python**, construído do zero para demonstrar:
 
-✅ **Princípios de Código Limpo** - Código legível, manutenível e bem documentado  
+✅ **Princípios de Código Limpo** - Código legível, mantível e bem documentado  
 ✅ **Arquitetura de Software** - Separação de responsabilidades, princípios SOLID  
 ✅ **Design de API RESTful** - Práticas padrão da indústria  
-✅ **Melhores Práticas de Segurança** - Auth JWT, hash de senhas, validação de entrada  
+✅ **Melhores Práticas de Segurança** - Auth JWT, hash de senha, validação de entrada  
 ✅ **Design de Banco de Dados** - Normalização, chaves estrangeiras, exclusões suaves  
-✅ **Stack Python Moderna** - FastAPI, SQLAlchemy 2.0, Pydantic V2  
+✅ **Stack Python Moderno** - FastAPI, SQLAlchemy 2.0, Pydantic V2  
 ✅ **Documentação Profissional** - README abrangente, comentários inline  
 
 **Por que construí isso:**  
-Para demonstrar minha capacidade de entregar código de qualidade de produção e meu comprometimento em aprender tecnologias backend modernas. Estou buscando ativamente oportunidades para contribuir com uma equipe de desenvolvimento e crescer como engenheiro de software profissional.
+Para demonstrar minha capacidade de entregar código de qualidade de produção e meu compromisso com o aprendizado de tecnologias backend modernas. Estou ativamente buscando oportunidades para contribuir com uma equipe de desenvolvimento e crescer como engenheiro de software profissional.
 
 ---
 
@@ -626,113 +647,113 @@ Licença MIT
 
 Copyright (c) 2025 Thiago Memelli
 
-A permissão é concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia
+É concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia
 deste software e arquivos de documentação associados (o "Software"), para lidar
-no Software sem restrição, incluindo, sem limitação, os direitos
-de usar, copiar, modificar, mesclar, publicar, distribuir, sublicenciar e/ou vender
-cópias do Software, e permitir às pessoas a quem o Software é
-fornecido que o façam, sujeito às seguintes condições:
+com o Software sem restrição, incluindo, sem limitação, os direitos de usar,
+copiar, modificar, mesclar, publicar, distribuir, sublicenciar e/ou vender
+cópias do Software, e permitir que as pessoas a quem o Software é fornecido
+o façam, sujeitas às seguintes condições:
 
 O aviso de copyright acima e este aviso de permissão devem ser incluídos em todas
 as cópias ou partes substanciais do Software.
 
 O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA OU
-IMPLÍCITA, INCLUINDO MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIALIZAÇÃO,
-ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO E NÃO VIOLAÇÃO. EM NENHUMA HIPÓTESE OS
-AUTORES OU DETENTORES DE DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER REIVINDICAÇÃO, DANOS OU OUTRA
-RESPONSABILIDADE, SEJA EM UMA AÇÃO DE CONTRATO, ATO ILÍCITO OU OUTRA FORMA, DECORRENTE DE,
-FORA DE OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO
+IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIALIZAÇÃO,
+ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA E NÃO VIOLAÇÃO. EM NENHUMA CIRCUNSTÂNCIA OS
+AUTORES OU DETENTORES DOS DIREITOS AUTORAIS SERÃO RESPONSÁVEIS POR QUALQUER RECLAMAÇÃO,
+DANOS OU OUTRA RESPONSABILIDADE, SEJA EM AÇÃO DE CONTRATO, DELITO OU DE OUTRA FORMA,
+DECORRENTE DE, FORA DE OU EM CONEXÃO COM O SOFTWARE OU O USO OU OUTRAS NEGOCIAÇÕES NO
 SOFTWARE.
 ```
 
 ---
 
-## � Melhorias Futuras & Roadmap
+## 🔮 Melhorias Futuras e Roadmap
 
-Esta seção demonstra consciência sobre requisitos de nível produção e considerações de escalabilidade.
+Esta seção demonstra consciência de requisitos de nível de produção e considerações de escalabilidade.
 
-### 🧪 Testes & Garantia de Qualidade
-- [ ] **Testes Unitários** com pytest (meta: 80%+ cobertura)
-- [ ] **Testes de Integração** para endpoints da API
-- [ ] **Testes de Carga** com Locust/k6
-- [ ] **Testes de Segurança** (validação OWASP Top 10)
+### 🧪 Testes e Garantia de Qualidade
+- [ ] **Testes Unitários** com pytest (meta: cobertura de 80%+)
+- [ ] **Testes de Integração** para endpoints de API
+- [ ] **Teste de Carga** com Locust/k6
+- [ ] **Teste de Segurança** (validação OWASP Top 10)
 
-### 🚀 DevOps & Infraestrutura
+### 🚀 DevOps e Infraestrutura
 - [ ] **Docker/Docker Compose** para containerização
 - [ ] **Pipeline CI/CD** (GitHub Actions/GitLab CI)
-- [ ] **Migrations com Alembic** (atualmente usando sistema customizado)
-- [ ] **Configuração por Ambiente** (dev/staging/prod)
+- [ ] **Migrações de Banco de Dados** com Alembic
+- [ ] **Configuração Baseada em Ambiente** (dev/staging/prod)
 - [ ] **Endpoints de Health Check** (/health, /ready)
 
-### 📊 Observabilidade & Monitoramento
-- [ ] **Logs Estruturados** (logs JSON com IDs de correlação)
-- [ ] **APM** (Application Performance Monitoring)
-- [ ] **Métricas & Dashboards** (Prometheus/Grafana)
+### 📊 Observabilidade e Monitoramento
+- [ ] **Logging Estruturado** (logs JSON com IDs de correlação)
+- [ ] **Monitoramento de Desempenho de Aplicação** (APM)
+- [ ] **Métricas e Dashboards** (Prometheus/Grafana)
 - [ ] **Rastreamento de Erros** (integração Sentry)
-- [ ] **Logs de Auditoria** para compliance
+- [ ] **Logs de Auditoria** para conformidade
 
 ### 🔒 Melhorias de Segurança
 - [ ] **Rate Limiting** por usuário/IP (prevenir abuso de API)
-- [ ] **Validação de Requisições** com schemas mais rigorosos
+- [ ] **Validação de Requisição** com schemas mais rigorosos
 - [ ] **Configuração CORS** para produção
-- [ ] **Gerenciamento de API Keys** para auth service-to-service
-- [ ] **Gerenciamento de Secrets** (AWS Secrets Manager/Vault)
+- [ ] **Gerenciamento de Chave de API** para auth serviço-a-serviço
+- [ ] **Gerenciamento de Segredos** (AWS Secrets Manager/Vault)
 
-### ⚡ Performance & Escalabilidade
-- [ ] **Connection Pooling** otimizado para banco de dados
-- [ ] **Cache Redis** para queries frequentes
-- [ ] **Padronização de Paginação** em todos endpoints
-- [ ] **Otimização de Queries** com índices apropriados
+### ⚡ Performance e Escalabilidade
+- [ ] **Otimização de Pool de Conexão de Banco de Dados**
+- [ ] **Cache Redis** para consultas frequentes
+- [ ] **Padronização de Paginação** em todos os endpoints
+- [ ] **Otimização de Consultas** com índices apropriados
 - [ ] **Tarefas Assíncronas em Background** (Celery/Dramatiq)
 
-### 🤖 Melhorias no Serviço de IA
+### 🤖 Melhorias do Serviço de IA
 - [ ] **Lógica de Retry** para falhas da API OpenAI
-- [ ] **Mecanismos de Fallback** quando IA estiver indisponível
-- [ ] **Monitoramento de Custo** de uso OpenAI por usuário
-- [ ] **Streaming de Respostas** para melhor UX
-- [ ] **Cache de Contexto** para reduzir chamadas à API
+- [ ] **Mecanismos de Fallback** quando IA está indisponível
+- [ ] **Monitoramento de Custo** para uso de OpenAI por usuário
+- [ ] **Streaming de Resposta** para melhor UX
+- [ ] **Cache de Contexto** para reduzir chamadas de API
 
 ### 📚 Documentação
-- [ ] **Diagramas de Arquitetura** (C4 Model/Draw.io)
-- [ ] **Estratégia de Versionamento** da API documentada
-- [ ] **Documentação do Schema** do banco (diagramas ERD)
-- [ ] **Guia de Deploy** para produção
-- [ ] **Guia de Contribuição** para open source
+- [ ] **Diagramas de Arquitetura** (Modelo C4/Draw.io)
+- [ ] **Documentação de Estratégia de Versionamento de API**
+- [ ] **Documentação de Schema de Banco de Dados** (diagramas ERD)
+- [ ] **Guia de Implantação** para produção
+- [ ] **Diretrizes de Contribuição** para código aberto
 
-### 🌐 Funcionalidades Adicionais
+### 🌐 Recursos Adicionais
 - [ ] **Suporte Multi-moeda**
-- [ ] **Planejamento de Orçamento & Alertas**
+- [ ] **Planejamento de Orçamento e Alertas**
 - [ ] **Transações Recorrentes**
 - [ ] **Exportação de Dados** (relatórios CSV/PDF)
 - [ ] **Integração com App Mobile** (cliente REST)
 
 ---
 
-> **Nota para Recrutadores:** Este roadmap demonstra minha compreensão de sistemas prontos para produção e requisitos de nível enterprise. Embora este seja um projeto de portfólio, estou plenamente consciente do que é necessário para escalar e manter software em ambientes de produção.
+> **Nota para Recrutadores:** Este roadmap demonstra minha compreensão de sistemas prontos para produção e requisitos de nível empresarial. Embora este seja um projeto de portfólio, estou totalmente ciente do que é necessário para escalar e manter software em ambientes de produção.
 
 ---
 
-## �🙏 Agradecimentos
+## 🙏 Agradecimentos
 
-- **FastAPI** - Pelo excelente framework web assíncrono
+- **FastAPI** - Pelo excelente framework web async
 - **SQLAlchemy** - Pelas poderosas capacidades de ORM
 - **Pydantic** - Pela elegante validação de dados
 - **Comunidade Python** - Pela extensa documentação e suporte
 
 ---
 
-## 📞 Contato & Suporte
+## 📞 Contato e Suporte
 
-Se você é um recrutador ou gerente de contratação interessado em minhas habilidades:
+Se você é um recrutador ou gerente de contratação interessado nas minhas habilidades:
 
-📧 **Email**: tmemelli@gmail.com  
-💼 **LinkedIn**: https://www.linkedin.com/in/thiagomemelli/  
-📱 **Telefone**: +5527989030474  
-🌐 **Portfólio**: https://thiagomemelli.com.br/
+📧 **Email**: [tmemelli@gmail.com]  
+💼 **LinkedIn**: [https://www.linkedin.com/in/thiagomemelli/]  
+📱 **Telefone**: [+5527989030474]  
+🌐 **Portfólio**: [https://thiagomemelli.com.br/]
 
 **Estou disponível para:**
-- Posições de Desenvolvedor Backend em tempo integral
-- Projetos de Desenvolvimento de APIs
+- Posições full-time de Desenvolvedor Backend
+- Projetos de Desenvolvimento de API
 - Consultoria Python/FastAPI
 - Entrevistas técnicas
 
@@ -744,6 +765,6 @@ Se você é um recrutador ou gerente de contratação interessado em minhas habi
 
 **Feito com ❤️ por Thiago Memelli**
 
-*Primeiro Projeto de API em Python - Dezembro 2025*
+*Primeiro Projeto de API Python - Dezembro 2025*
 
 </div>

@@ -2,6 +2,81 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-12-18
+
+### ✨ Added - AI-Powered Financial Assistant
+
+#### 🤖 AI Chat Feature
+- **Natural Language Queries** - Ask questions about finances in plain language
+- **OpenAI Integration** - Powered by GPT-4o-mini for intelligent responses
+- **Context-Aware Analysis** - AI analyzes user's actual transaction data
+- **Conversation History** - All chats saved with timestamps for future reference
+- **3 New Endpoints**:
+  - `POST /api/v1/ai/chat` - Ask AI about your finances
+  - `GET /api/v1/ai/history` - Retrieve conversation history (limit: 10-50)
+  - `DELETE /api/v1/ai/history/{id}` - Delete specific conversation
+
+#### 🧹 Markdown Cleaner Utility (95% Coverage)
+- **Text Formatting Removal** - Removes bold (`**text**`), italic (`*text*`), headers (`# text`)
+- **List Conversion** - Converts `- item` to `• item` for better readability
+- **Code Block Removal** - Cleans ` ```code blocks``` ` and `` `inline code` ``
+- **Link Cleaning** - Converts `[text](url)` to plain text
+- **Line Break Preservation** - Maintains `\n\n` for paragraph structure
+- **HTML Tag Removal** - Strips all HTML tags for security
+- **Whitespace Normalization** - Removes excess spaces and blank lines
+- **17 Cleaning Rules** - Comprehensive text processing pipeline
+
+#### Technical Implementation
+- **New Layer: `services/`** - Business logic separation
+  - Created `AIService` class for OpenAI orchestration
+  - Handles data fetching, prompt building, response processing
+  
+- **New Layer: `utils/`** - Shared utility functions
+  - Created `MarkdownCleaner` class with 17 text cleaning rules
+  - Static methods for easy reusability
+  
+- **New Model: `Chat`** - Conversation history persistence
+  - Stores user questions and AI responses
+  - Tracks timestamps and relationship to users
+  
+- **New Schema: `ai_chat.py`** - Request/response validation
+  - `ChatRequest` - Validates user input
+  - `ChatResponse` - Structured AI response with optional data
+  - `ChatHistory` - Conversation list with metadata
+
+#### Database Changes
+- Added `chats` table for AI conversation history
+- Foreign key relationship: `chats.user_id → users.id`
+- Automatic timestamps: `created_at`
+- Schema: question (Text), response (Text), SQL query tracking
+
+#### Dependencies
+- **Added**: `openai==2.9.0` - OpenAI API client library
+
+#### Documentation
+- Updated README.md with AI Chat section
+- Updated README.md with Markdown Cleaner documentation  
+- Added architecture diagram showing `services/` and `utils/` layers
+- Added AI Chat usage examples in API documentation
+- Updated technology stack table with OpenAI API
+- Updated total endpoints: 20 → 23
+
+#### Error Handling
+- Transaction rollback on AI service failures
+- Graceful error messages for OpenAI API issues
+- Database connection timeout handling (SQLite locking prevention)
+
+### 🎯 Why These Changes?
+
+These improvements demonstrate:
+- **AI Integration Skills** - Working with external APIs (OpenAI)
+- **Text Processing** - Custom utility for data cleaning (95% coverage)
+- **Service Architecture** - Proper separation of business logic
+- **Production Readiness** - Error handling, database locking solutions
+- **Clean Code** - Utilities, services, and comprehensive documentation
+
+---
+
 ## [1.1.0] - 2025-12-15
 
 ### ✨ Added - User Profile Management
