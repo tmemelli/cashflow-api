@@ -16,7 +16,7 @@ Import order matters due to Foreign Key dependencies:
 3. Import models with dependencies (e.g., Category depends on User)
 4. This registers all models with Base.metadata
 """
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 # Create the SQLAlchemy Base class
 Base = declarative_base()

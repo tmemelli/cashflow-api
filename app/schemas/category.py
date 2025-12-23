@@ -10,7 +10,7 @@ Schemas:
 - CategoryResponse: Schema for returning category data to client
 - CategoryWithTransactions: Schema with related transactions (optional, for detailed view)
 """
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 from datetime import datetime
 from app.models.category import CategoryType
@@ -102,8 +102,7 @@ class CategoryResponse(CategoryBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CategoryWithTransactions(CategoryResponse):

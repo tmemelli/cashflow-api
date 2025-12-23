@@ -23,25 +23,28 @@ from app.core.config import settings
 from fastapi.openapi.utils import get_openapi
 from app.db.session import engine
 from app.db.base import Base
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Application lifespan events.
+    
+    Startup: Create all database tables
+    Shutdown: Clean up resources (if needed)
+    """
+    # Startup
+    Base.metadata.create_all(bind=engine)
+    yield
+    # Shutdown (add cleanup code here if needed)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="API for managing cash flow with multiple authentication methods.",
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan
 )
-
-
-# Create database tables on startup
-@app.on_event("startup")
-def on_startup():
-    """
-    Create all database tables when the application starts.
-    
-    This will create tables for all models imported in app/db/base.py
-    If tables already exist, this operation is safe and won't modify them.
-    """
-    Base.metadata.create_all(bind=engine)
 
 
 # Custom OpenAPI schema with multiple auth methods

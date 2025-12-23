@@ -105,7 +105,7 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    # Tenta pegar token de qualquer um dos dois métodos
+    # Try to get the token from either method (oauth or bearer).
     token = None
     if oauth_token:
         token = oauth_token

@@ -27,7 +27,7 @@ from app.models.category import Category
 router = APIRouter()
 
 
-# TODO: GET /reports/summary - Overall summary
+# GET /reports/summary - Overall summary
 @router.get("/summary")
 def get_summary(
     db: Session = Depends(get_db),
@@ -98,7 +98,7 @@ def get_summary(
     }
 
 
-# TODO: GET /reports/by-category - Breakdown by category
+# GET /reports/by-category - Breakdown by category
 @router.get("/by-category")
 def get_by_category(
     db: Session = Depends(get_db),
@@ -165,8 +165,8 @@ def get_by_category(
         .join(Transaction, Transaction.category_id == Category.id)
         .filter(
             Transaction.user_id == current_user.id,
-            Transaction.date >= start_date,
-            Transaction.date <= end_date,
+            Transaction.date_transaction >= start_date,
+            Transaction.date_transaction <= end_date,
             Transaction.is_deleted == False
         )
     )
@@ -183,8 +183,8 @@ def get_by_category(
     ).filter(
         Transaction.user_id == current_user.id,
         Transaction.category_id == None,
-        Transaction.date >= start_date,
-        Transaction.date <= end_date,
+        Transaction.date_transaction >= start_date,
+        Transaction.date_transaction <= end_date,
         Transaction.is_deleted == False
     )
     
@@ -225,7 +225,7 @@ def get_by_category(
     }
 
 
-# TODO: GET /reports/monthly - Monthly breakdown
+# GET /reports/monthly - Monthly breakdown
 @router.get("/monthly")
 def get_monthly(
     db: Session = Depends(get_db),
@@ -270,14 +270,14 @@ def get_monthly(
     # Query grouped by year and month
     results = (
         db.query(
-            extract('year', Transaction.date).label('year'),
-            extract('month', Transaction.date).label('month'),
+            extract('year', Transaction.date_transaction).label('year'),
+            extract('month', Transaction.date_transaction).label('month'),
             Transaction.type,
             func.sum(Transaction.amount).label('total')
         )
         .filter(
             Transaction.user_id == current_user.id,
-            Transaction.date >= start_date,
+            Transaction.date_transaction >= start_date,
             Transaction.is_deleted == False
         )
         .group_by('year', 'month', Transaction.type)
@@ -311,12 +311,12 @@ def get_monthly(
     return {"months": month_list}
 
 
-# TODO: GET /reports/trends - Financial trends
+# GET /reports/trends - Financial trends
 @router.get("/trends")
 def get_trends(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
-    period: str = Query(default="weekly", regex="^(daily|weekly|monthly)$")
+    period: str = Query(default="weekly", pattern="^(daily|weekly|monthly)$")
 ):
     """
     Get financial trends over time.
@@ -361,29 +361,29 @@ def get_trends(
     # Query transactions
     results = (
         db.query(
-            Transaction.date,
+            Transaction.date_transaction,
             Transaction.type,
             func.sum(Transaction.amount).label('total')
         )
         .filter(
             Transaction.user_id == current_user.id,
-            Transaction.date >= start_date,
+            Transaction.date_transaction >= start_date,
             Transaction.is_deleted == False
         )
-        .group_by(Transaction.date, Transaction.type)
+        .group_by(Transaction.date_transaction, Transaction.type)
         .all()
     )
     
     # Organize data by date
     daily_data = {}
     for r in results:
-        if r.date not in daily_data:
-            daily_data[r.date] = {"income": Decimal("0.00"), "expense": Decimal("0.00")}
+        if r.date_transaction not in daily_data:
+            daily_data[r.date_transaction] = {"income": Decimal("0.00"), "expense": Decimal("0.00")}
         
         if r.type == TransactionType.INCOME:
-            daily_data[r.date]["income"] = r.total
+            daily_data[r.date_transaction]["income"] = r.total
         else:
-            daily_data[r.date]["expense"] = r.total
+            daily_data[r.date_transaction]["expense"] = r.total
     
     # Aggregate by period
     trend_data = []
@@ -429,14 +429,14 @@ def get_trends(
         # Group by months using extract
         monthly_results = (
             db.query(
-                extract('year', Transaction.date).label('year'),
-                extract('month', Transaction.date).label('month'),
+                extract('year', Transaction.date_transaction).label('year'),
+                extract('month', Transaction.date_transaction).label('month'),
                 Transaction.type,
                 func.sum(Transaction.amount).label('total')
             )
             .filter(
                 Transaction.user_id == current_user.id,
-                Transaction.date >= start_date,
+                Transaction.date_transaction >= start_date,
                 Transaction.is_deleted == False
             )
             .group_by('year', 'month', Transaction.type)

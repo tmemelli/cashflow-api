@@ -29,7 +29,7 @@ from app.schemas.category import (
 router = APIRouter()
 
 
-# TODO: GET /categories - List categories
+# GET /categories - List categories
 @router.get("/", response_model=List[CategoryResponse])
 def list_categories(
     db: Session = Depends(get_db),
@@ -61,7 +61,7 @@ def list_categories(
     return categories
 
 
-# TODO: POST /categories - Create category
+# POST /categories - Create category
 @router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_category(
     category_in: CategoryCreate,
@@ -90,7 +90,7 @@ def create_category(
     return category
 
 
-# TODO: GET /categories/{category_id} - Get category details
+# GET /categories/{category_id} - Get category details
 @router.get("/{category_id}", response_model=CategoryWithTransactions)
 def get_category(
     category_id: int,
@@ -129,7 +129,7 @@ def get_category(
     return category_dict
 
 
-# TODO: PUT /categories/{category_id} - Update category
+# PUT /categories/{category_id} - Update category
 @router.put("/{category_id}", response_model=CategoryResponse)
 def update_category(
     category_id: int,
@@ -153,24 +153,16 @@ def update_category(
     }
     
     Raises:
-        404: Category not found
+        404: Category not found (Secure: returns 404 even if it belongs to another user)
         403: Cannot update system default category
-        403: Cannot update another user's category
     """
     # Get category
-    category = crud_category.get(db, id=category_id)
+    category = crud_category.get_by_owner(db, id=category_id, user_id=current_user.id)    
     
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Category not found"
-        )
-    
-    # Cannot update deleted categories
-    if category.is_deleted:
-        raise HTTPException(
-            status_code=status.HTTP_410_GONE,
-            detail="Cannot update deleted category"
         )
     
     # Cannot update system default categories
@@ -180,19 +172,12 @@ def update_category(
             detail="Cannot update system default category"
         )
     
-    # Check ownership
-    if category.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
-    
     # Update category
     category = crud_category.update(db, db_obj=category, obj_in=category_in)
     return category
 
 
-# TODO: DELETE /categories/{category_id} - Soft delete category
+# DELETE /categories/{category_id} - Soft delete category
 @router.delete("/{category_id}", response_model=CategoryResponse)
 def delete_category(
     category_id: int,

@@ -2,22 +2,21 @@
 Base CRUD operations module.
 
 This module provides a generic CRUD (Create, Read, Update, Delete) class
-that can be reused for any SQLAlchemy model. It uses Python generics (TypeVar)
-to maintain type safety while being flexible.
-
-The CRUDBase class is inherited by specific CRUD classes like CRUDUser.
+that supports any SQLAlchemy model. It leverages Python generics to ensure
+type safety and code reusability across the application.
 """
-
-from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
+from datetime import datetime, timezone
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.db.base import Base
+# --- CORRECTION HERE: changed from .base_class to .base ---
+from app.db.base import Base 
 
-ModelType = TypeVar("ModelType", bound=Base)  # type: ignore
+# Define generic type variables
+ModelType = TypeVar("ModelType", bound=Base) # type: ignore
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
@@ -25,97 +24,86 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     """
     Generic CRUD operations class.
-
-    This class provides standard CRUD operations that work with any SQLAlchemy model.
-    It uses Python generics to maintain type safety.
-
-    Type Parameters:
-        ModelType: The SQLAlchemy model class (e.g., User)
-        CreateSchemaType: The Pydantic schema for creation (e.g., UserCreate)
-        UpdateSchemaType: The Pydantic schema for updates (e.g., UserUpdate)
+    
+    This class implements default methods for Create, Read, Update, and Delete
+    operations. It can be extended or overridden by specific CRUD classes
+    (e.g., CRUDUser, CRUDItem).
 
     Attributes:
-        model: The SQLAlchemy model class this CRUD instance operates on
-
-    Example:
-        >>> user_crud = CRUDBase(User)
-        >>> user = user_crud.get(db, id=1)
-        >>> new_user = user_crud.create(db, obj_in=user_create_data)
+        model: The SQLAlchemy model class associated with this CRUD instance.
     """
 
     def __init__(self, model: Type[ModelType]):
         """
-        Initialize CRUD object with a SQLAlchemy model.
+        Initialize the CRUD object.
 
         Args:
-            model: The SQLAlchemy model class (e.g., User)
+            model: The SQLAlchemy model class to operate on.
         """
         self.model = model
 
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
         """
-        Get a single record by ID.
+        Retrieve a single record by its ID.
+        
+        It automatically checks if the model supports Soft Delete ('is_deleted')
+        and filters out deleted records if applicable.
 
         Args:
-            db: Database session
-            id: Primary key value of the record
+            db: The database session.
+            id: The primary key of the record.
 
         Returns:
-            ModelType: The record if found
-            None: If record doesn't exist
-
-        Example:
-            >>> user = crud.get(db, id=1)
-            >>> if user:
-            >>>     print(user.email)
+            Optional[ModelType]: The found record, or None if not found or deleted.
         """
-
-        return db.query(self.model).filter(self.model.id == id).first()
+        query = db.query(self.model).filter(self.model.id == id)
+        
+        # Automatic Soft Delete Check
+        if hasattr(self.model, "is_deleted"):
+            query = query.filter(self.model.is_deleted == False)
+            
+        return query.first()
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
         """
-        Get multiple records with pagination.
+        Retrieve multiple records with pagination.
 
         Args:
-            db: Database session
-            skip: Number of records to skip (for pagination)
-            limit: Maximum number of records to return
+            db: The database session.
+            skip: The number of records to skip (offset).
+            limit: The maximum number of records to return.
 
         Returns:
-            List[ModelType]: List of records (could be empty)
-
-        Example:
-            >>> users = crud.get_multi(db, skip=0, limit=10)  # First 10 users
-            >>> users = crud.get_multi(db, skip=10, limit=10)  # Next 10 users
+            List[ModelType]: A list of records.
         """
+        query = db.query(self.model)
+        
+        # Simple Soft Delete filter for lists
+        if hasattr(self.model, "is_deleted"):
+            query = query.filter(self.model.is_deleted == False)
 
-        return db.query(self.model).offset(skip).limit(limit).all()
+        return query.offset(skip).limit(limit).all()
 
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
         """
         Create a new record in the database.
 
         Args:
-            db: Database session
-            obj_in: Pydantic schema with data to create (e.g., UserCreate)
+            db: The database session.
+            obj_in: The Pydantic schema containing the data to create.
 
         Returns:
-            ModelType: The created record with ID and timestamps populated
-
-        Example:
-            >>> user_in = UserCreate(email="test@example.com", password="secret")
-            >>> user = crud.create(db, obj_in=user_in)
-            >>> print(user.id)  # Auto-generated ID
+            ModelType: The newly created and committed record.
         """
-
         obj_in_data = jsonable_encoder(obj_in)
-        db_obj = self.model(**obj_in_data)
+        db_obj = self.model(**obj_in_data)  # type: ignore
+        
         db.add(db_obj)
-        db.commit()
+        db.commit() 
         db.refresh(db_obj)
-
+        
         return db_obj
 
     def update(
@@ -129,53 +117,66 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Update an existing record.
 
         Args:
-            db: Database session
-            db_obj: The existing record from database
-            obj_in: Pydantic schema or dict with fields to update
+            db: The database session.
+            db_obj: The existing database object to update.
+            obj_in: The Pydantic schema or dictionary containing update data.
 
         Returns:
-            ModelType: The updated record
-
-        Example:
-            >>> user = crud.get(db, id=1)
-            >>> user_update = UserUpdate(email="newemail@example.com")
-            >>> updated_user = crud.update(db, db_obj=user, obj_in=user_update)
+            ModelType: The updated record.
         """
+        obj_data = jsonable_encoder(db_obj)
+        
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
             update_data = obj_in.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(db_obj, field, value)
+            
+        for field in obj_data:
+            if field in update_data:
+                setattr(db_obj, field, update_data[field])
         
-        # Update updated_at timestamp if model has this field
+        # Auto-update timestamp
         if hasattr(db_obj, 'updated_at'):
-            db_obj.updated_at = datetime.utcnow()
-        
+             db_obj.updated_at = datetime.now(timezone.utc)
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-
+        
         return db_obj
 
     def remove(self, db: Session, *, id: int) -> ModelType:
         """
         Delete a record from the database.
+        
+        If the model supports Soft Delete, it marks it as deleted instead of removing.
+        Otherwise, it performs a hard delete.
 
         Args:
-            db: Database session
-            id: Primary key of record to delete
+            db: The database session.
+            id: The primary key of the record.
 
         Returns:
-            ModelType: The deleted record (before deletion)
-
-        Example:
-            >>> deleted_user = crud.remove(db, id=1)
-            >>> print(f"Deleted user: {deleted_user.email}")
+            ModelType: The deleted (or marked deleted) record.
         """
+        obj = db.get(self.model, id)
+        
+        if not obj:
+            return None
+        
+        # Soft-delete path (audit)
+        if hasattr(obj, "is_deleted"):
+            obj.is_deleted = True
+            obj.deleted_at = datetime.now(timezone.utc)
+            db.add(obj)
+            db.commit()
+            db.refresh(obj)  # Safe: the object still exists, it was only marked
 
-        obj = db.query(self.model).get(id)
-        db.delete(obj)
-        db.commit()
-
+        # Hard-delete path (cleanup)
+        else:
+            db.delete(obj)
+            db.commit()
+            # IMPORTANT: we do not call db.refresh(obj) here.
+            # The object was physically removed; calling refresh would raise an error.
+            
         return obj

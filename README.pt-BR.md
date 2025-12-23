@@ -362,7 +362,7 @@ Content-Type: application/json
   "description": "Almoço",
   "category_id": 1,
   "transaction_type": "expense",
-  "date": "2025-12-18"
+  "date_transaction": "2025-12-18"
 }
 ```
 

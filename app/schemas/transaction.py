@@ -10,7 +10,7 @@ Schemas:
 - TransactionResponse: Schema for returning transaction data to client
 - TransactionWithCategory: Schema with full category details
 """
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 from datetime import datetime, date
 from decimal import Decimal
@@ -25,13 +25,13 @@ class TransactionBase(BaseModel):
         type: Transaction type (income or expense)
         amount: Transaction amount (positive decimal)
         description: Optional description
-        date: Transaction date
+        date_transaction: Transaction date
         category_id: Optional category ID
     """
     type: TransactionType
     amount: Decimal = Field(..., gt=0, description="Amount must be greater than 0")
     description: Optional[str] = Field(None, max_length=500)
-    date: date
+    date_transaction: date
     category_id: Optional[int] = None
 
 
@@ -46,7 +46,7 @@ class TransactionCreate(BaseModel):
             "type": "expense",
             "amount": 150.50,
             "description": "Grocery shopping",
-            "date": "2025-01-15",
+            "date_transaction": "2025-01-15",
             "category_id": 2
         }
     
@@ -62,14 +62,14 @@ class TransactionCreate(BaseModel):
         type: Transaction type (required when creating new)
         amount: Transaction amount (required when creating new)
         description: Optional description
-        date: Transaction date (required when creating new)
+        date_transaction: Transaction date (required when creating new)
         category_id: Optional category ID
     """
     id: Optional[int] = Field(None, description="Provide only this field to restore a deleted transaction")
     type: Optional[TransactionType] = None
     amount: Optional[Decimal] = Field(None, gt=0, description="Amount must be greater than 0")
     description: Optional[str] = Field(None, max_length=500)
-    date: Optional[date] = None
+    date_transaction: Optional[date] = None
     category_id: Optional[int] = None
 
 
@@ -90,7 +90,7 @@ class TransactionUpdate(BaseModel):
     type: Optional[TransactionType] = None
     amount: Optional[Decimal] = Field(None, gt=0, description="Amount must be greater than 0")
     description: Optional[str] = Field(None, max_length=500)
-    date: Optional[date] = None
+    date_transaction: Optional[date] = None
     category_id: Optional[int] = None
 
 
@@ -106,7 +106,7 @@ class TransactionResponse(TransactionBase):
         type: Transaction type
         amount: Transaction amount
         description: Description (may be None)
-        date: Transaction date
+        date_transaction: Transaction date
         category_id: Category ID (may be None)
         created_at: Creation timestamp
         updated_at: Last update timestamp
@@ -118,7 +118,7 @@ class TransactionResponse(TransactionBase):
             "type": "expense",
             "amount": "150.50",
             "description": "Grocery shopping",
-            "date": "2025-01-15",
+            "date_transaction": "2025-01-15",
             "category_id": 2,
             "created_at": "2025-01-15T10:30:00Z",
             "updated_at": "2025-01-15T10:30:00Z"
@@ -129,14 +129,13 @@ class TransactionResponse(TransactionBase):
     type: TransactionType
     amount: Decimal
     description: Optional[str] = None
-    date: date
+    date_transaction: date
     category_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TransactionWithCategory(TransactionResponse):
@@ -153,7 +152,7 @@ class TransactionWithCategory(TransactionResponse):
             "type": "expense",
             "amount": "150.50",
             "description": "Grocery shopping",
-            "date": "2025-01-15",
+            "date_transaction": "2025-01-15",
             "category_id": 2,
             "category_name": "Food",
             "category_type": "expense",

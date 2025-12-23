@@ -21,6 +21,21 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
     Handles both system default categories and user-created categories.
     """
     
+    def get_by_owner(self, db: Session, *, id: int, user_id: int) -> Optional[Category]:
+        """
+        Get a specific category ensuring it belongs to the user (or is default).
+        Used for security isolation (returns None if user is not owner).
+        """
+        return (
+            db.query(self.model)
+            .filter(Category.id == id)
+            .filter(
+                (Category.user_id == user_id) | (Category.is_default == True)
+            )
+            .filter(Category.is_deleted == False)
+            .first()
+        )
+
     def get_by_user(
         self,
         db: Session,
@@ -276,11 +291,11 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         Returns:
             Soft deleted Category object
         """
-        from datetime import datetime
+        from datetime import datetime, timezone
         
-        category = db.query(self.model).get(id)
+        category = db.get(self.model, id)
         category.is_deleted = True
-        category.deleted_at = datetime.utcnow()
+        category.deleted_at = datetime.now(timezone.utc)
         db.add(category)
         db.commit()
         db.refresh(category)

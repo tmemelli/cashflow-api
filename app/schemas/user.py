@@ -15,7 +15,7 @@ Schema hierarchy:
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 
 
 class UserBase(BaseModel):
@@ -113,8 +113,7 @@ class UserInDB(UserBase):
     updated_at: Optional[datetime] = None
     last_login_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class User(UserBase):
@@ -146,5 +145,4 @@ class User(UserBase):
     updated_at: Optional[datetime] = None
     last_login_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

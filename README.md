@@ -85,7 +85,7 @@ This project demonstrates **production-ready code** with:
 - **Dual Transaction Types** - Income and Expense tracking
 - **Category System** - Organize transactions by custom or default categories
 - **Soft Delete** - Transactions are marked as deleted, not permanently removed (audit trail)
-- **Date Range Filtering** - Query transactions by specific time periods
+- **Date Transaction Range Filtering** - Query transactions by specific time periods
 
 ### 📈 Analytics & Reports
 - **Financial Statistics** - Real-time calculation of totals, balance, and transaction count
@@ -355,7 +355,7 @@ POST /api/v1/transactions/
   "type": "income",
   "amount": 5000.00,
   "description": "Monthly salary",
-  "date": "2025-12-01",
+  "date_transaction": "2025-12-01",
   "category_id": 1
 }
 ```
@@ -426,7 +426,7 @@ Our custom text processing utility ensures AI responses are clean and frontend-r
 
 #### 💸 Transactions (6 endpoints)
 - `POST /api/v1/transactions` - Create new transaction (income/expense)
-- `GET /api/v1/transactions` - List all transactions (filterable by date/category/type)
+- `GET /api/v1/transactions` - List all transactions (filterable by date_transaction/category/type)
 - `GET /api/v1/transactions/{id}` - Get specific transaction
 - `PUT /api/v1/transactions/{id}` - Update transaction
 - `DELETE /api/v1/transactions/{id}` - Soft delete transaction
@@ -500,7 +500,7 @@ Content-Type: application/json
     "category": "Food & Drinks",
     "transaction_count": 12
   },
-  "sql_query": "SELECT SUM(amount) FROM transactions WHERE category_id=... AND date>=..."
+  "sql_query": "SELECT SUM(amount) FROM transactions WHERE category_id=... AND date_transaction>=..."
 }
 ```
 

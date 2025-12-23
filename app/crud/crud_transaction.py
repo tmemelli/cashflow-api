@@ -4,8 +4,8 @@ Transaction CRUD operations module.
 This module provides database operations for Transaction model.
 Includes specific methods for filtering, soft delete, and statistics.
 """
-from typing import List, Optional
-from datetime import date, datetime
+from typing import List, Optional, Any
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
@@ -21,11 +21,22 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
     
     Inherits basic CRUD from CRUDBase and adds transaction-specific methods:
     - Soft delete (mark as deleted instead of removing)
-    - Filter by date range, type, category
+    - Filter by date_transaction range, type, category
     - Calculate statistics (total income, total expense, balance)
     """
     
-    # TODO: Implement get_multi_by_user (list user's active transactions)
+    def get(self, db: Session, id: Any) -> Optional[Transaction]:
+        """
+        Get transaction by ID, ensuring it hasn't been soft-deleted.
+        """
+        return db.query(self.model).filter(
+            and_(
+                self.model.id == id,
+                self.model.is_deleted == False
+            )
+        ).first()
+    
+    # get_multi_by_user (list user's active transactions)
     def get_multi_by_user(
         self,
         db: Session,
@@ -62,13 +73,13 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         
         return (
             query
-            .order_by(Transaction.date.desc(), Transaction.created_at.desc())
+            .order_by(Transaction.date_transaction.desc(), Transaction.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
         )
     
-    # TODO: Implement get_by_date_range (filter by date)
+    # get_by_date_range (filter by date_transaction range)
     def get_by_date_range(
         self,
         db: Session,
@@ -80,7 +91,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         category_id: Optional[int] = None
     ) -> List[Transaction]:
         """
-        Get transactions within a date range.
+        Get transactions within a date_transaction range.
         
         Args:
             db: Database session
@@ -106,8 +117,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         query = db.query(self.model).filter(
             and_(
                 Transaction.user_id == user_id,
-                Transaction.date >= start_date,
-                Transaction.date <= end_date,
+                Transaction.date_transaction >= start_date,
+                Transaction.date_transaction <= end_date,
                 Transaction.is_deleted == False
             )
         )
@@ -118,9 +129,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         if category_id is not None:
             query = query.filter(Transaction.category_id == category_id)
         
-        return query.order_by(Transaction.date.desc()).all()
+        return query.order_by(Transaction.date_transaction.desc()).all()
     
-    # TODO: Implement soft_delete (mark as deleted)
+    # soft_delete (mark as deleted)
     def soft_delete(
         self,
         db: Session,
@@ -154,14 +165,14 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         if transaction:
             transaction.is_deleted = True
             # set deleted_at timestamp for audit/restore
-            transaction.deleted_at = datetime.utcnow()
+            transaction.deleted_at = datetime.now(timezone.utc)
             db.add(transaction)
             db.commit()
             db.refresh(transaction)
         
         return transaction
     
-    # TODO: Implement get_statistics (calculate totals)
+    # get_statistics (calculate totals)
     def get_statistics(
         self,
         db: Session,
@@ -205,9 +216,9 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
         ]
         
         if start_date:
-            base_filters.append(Transaction.date >= start_date)
+            base_filters.append(Transaction.date_transaction >= start_date)
         if end_date:
-            base_filters.append(Transaction.date <= end_date)
+            base_filters.append(Transaction.date_transaction <= end_date)
         
         # Calculate total income (query independente)
         total_income = (

@@ -32,7 +32,7 @@ from app.schemas.transaction import (
 router = APIRouter()
 
 
-# TODO: GET /transactions - List transactions with filters
+# GET /transactions - List transactions with filters
 @router.get("/", response_model=List[TransactionResponse])
 def list_transactions(
     db: Session = Depends(get_db),
@@ -97,7 +97,7 @@ def list_transactions(
     return transactions
 
 
-# TODO: POST /transactions - Create or restore transaction
+# POST /transactions - Create or restore transaction
 @router.post("/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 def create_transaction(
     transaction_in: TransactionCreate,
@@ -112,7 +112,7 @@ def create_transaction(
         "type": "expense",
         "amount": 150.50,
         "description": "Grocery shopping",
-        "date": "2025-01-15",
+        "date_transaction": "2025-01-15",
         "category_id": 2
     }
     
@@ -143,7 +143,7 @@ def create_transaction(
             transaction_in.type is not None,
             transaction_in.amount is not None,
             transaction_in.description is not None,
-            transaction_in.date is not None,
+            transaction_in.date_transaction is not None,
             transaction_in.category_id is not None
         ])
         
@@ -178,10 +178,10 @@ def create_transaction(
     
     # MODE 1: CREATE new transaction
     # Validate required fields for creation
-    if not all([transaction_in.type, transaction_in.amount, transaction_in.date]):
+    if not all([transaction_in.type, transaction_in.amount, transaction_in.date_transaction]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Missing required fields: type, amount, and date are required for creating new transaction"
+            detail="Missing required fields: type, amount, and date_transaction are required for creating new transaction"
         )
     
     # Validate category if provided
@@ -220,7 +220,7 @@ def create_transaction(
     return db_transaction
 
 
-# TODO: GET /transactions/statistics - Get statistics
+# GET /transactions/statistics - Get statistics
 @router.get("/statistics", response_model=dict)
 def get_statistics(
     db: Session = Depends(get_db),
@@ -257,7 +257,7 @@ def get_statistics(
     return statistics
 
 
-# TODO: DELETE /transactions/{transaction_id} - Soft delete
+# DELETE /transactions/{transaction_id} - Soft delete
 @router.delete("/{transaction_id}", response_model=TransactionResponse)
 def delete_transaction(
     transaction_id: int,
@@ -294,7 +294,7 @@ def delete_transaction(
     return transaction
 
 
-# TODO: GET /transactions/{transaction_id} - Get transaction details
+# GET /transactions/{transaction_id} - Get transaction details
 @router.get("/{transaction_id}", response_model=TransactionResponse)
 def get_transaction(
     transaction_id: int,
@@ -321,7 +321,7 @@ def get_transaction(
     return transaction
 
 
-# TODO: PUT /transactions/{transaction_id} - Update transaction
+# PUT /transactions/{transaction_id} - Update transaction
 @router.put("/{transaction_id}", response_model=TransactionResponse)
 def update_transaction(
     transaction_id: int,
@@ -340,7 +340,7 @@ def update_transaction(
         "type": "income",
         "amount": 200.00,
         "description": "Freelance work",
-        "date": "2025-01-16",
+        "date_transaction": "2025-01-16",
         "category_id": 10
     }
     

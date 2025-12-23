@@ -48,7 +48,7 @@ class Transaction(Base):
         type: Whether this is income or expense (TransactionType enum)
         amount: Transaction amount (Decimal, 2 decimal places, e.g., 150.50)
         description: Description of the transaction (optional, max 500 chars)
-        date: Date when the transaction occurred (can be future for planning)
+        date_transaction: Date when the transaction occurred (can be future for planning)
         is_deleted: Soft delete flag (True = deleted, False = active)
         created_at: When transaction was created
         updated_at: When transaction was last modified
@@ -71,7 +71,7 @@ class Transaction(Base):
         ...     type=TransactionType.INCOME,
         ...     amount=Decimal("5000.00"),
         ...     description="Monthly salary",
-        ...     date=date.today()
+        ...     date_transaction=date.today()
         ... )
         
         Expense transaction:
@@ -81,7 +81,7 @@ class Transaction(Base):
         ...     type=TransactionType.EXPENSE,
         ...     amount=Decimal("150.75"),
         ...     description="Supermarket shopping",
-        ...     date=date.today()
+        ...     date_transaction=date.today()
         ... )
     """
     
@@ -93,7 +93,7 @@ class Transaction(Base):
     type = Column(Enum(TransactionType), nullable=False)
     amount = Column(Numeric(precision=10, scale=2), nullable=False)
     description = Column(String(500), nullable=True)
-    date = Column(Date, nullable=False)
+    date_transaction = Column(Date, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

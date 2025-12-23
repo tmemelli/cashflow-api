@@ -11,21 +11,21 @@ This service handles all AI-powered chat operations:
 The service acts as an intermediary between the user, database,
 and OpenAI API, ensuring secure and efficient operations.
 """
-
+import logging
 from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 from openai import OpenAI
 from datetime import datetime
-
 from app.core.config import settings
 from app.models.user import User
 from app.models.chat import Chat
-from app.models.transaction import Transaction
+from app.models.transaction import Transaction, TransactionType
 from app.models.category import Category
 from sqlalchemy import func
 from app.utils.markdown_cleaner import clean_markdown
+from decimal import Decimal
 
-
+logger = logging.getLogger(__name__)
 class AIService:
     """
     Service class for AI chat operations.
@@ -58,12 +58,21 @@ class AIService:
         Raises:
             ValueError: If OPENAI_API_KEY is not configured.
         """
-        if not settings.openai_api_key:
-            raise ValueError("OPENAI_API_KEY not configured in environment")
-        
-        self.client = OpenAI(api_key=settings.openai_api_key)
         self.model = settings.openai_model
-    
+        self.api_key = settings.openai_api_key
+        self.client: Optional[OpenAI] = None
+
+        # Attempt to connect. If it fails or the key is missing, simply log the error.
+        # The server remains operational for login, transactions, etc.
+        if self.api_key:
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+            except Exception as e:
+                logger.error(f"Failed to initialize OpenAI client: {e}")
+                self.client = None
+        else:
+            logger.warning("OPENAI_API_KEY not configured. AI features will be disabled.")
+
     def process_question(
         self,
         db: Session,
@@ -99,6 +108,14 @@ class AIService:
             >>> print(response["reply"])
             "You spent $1,500.00 this month on 25 transactions."
         """
+        
+        # Safety check: ensure client is initialized before processing
+        if not self.client:
+            return {
+                "reply": "AI Assistant is currently unavailable (API configuration missing).",
+                "data": {},
+                "sql_query": None
+            }
         
         try:
             # Step 1: Analyze question and fetch data
@@ -168,15 +185,15 @@ class AIService:
         # Fetch summary statistics
         income_total = db.query(func.sum(Transaction.amount)).filter(
             Transaction.user_id == user.id,
-            Transaction.type == "income",
+            Transaction.type == TransactionType.INCOME,
             Transaction.is_deleted == False
-        ).scalar() or 0.0
+        ).scalar() or Decimal("0.0")
         
         expense_total = db.query(func.sum(Transaction.amount)).filter(
             Transaction.user_id == user.id,
-            Transaction.type == "expense",
+            Transaction.type == TransactionType.EXPENSE,
             Transaction.is_deleted == False
-        ).scalar() or 0.0
+        ).scalar() or Decimal("0.0")
         
         balance = income_total - expense_total
         
@@ -213,7 +230,7 @@ class AIService:
             Transaction.user_id == user.id,
             Transaction.is_deleted == False
         ).order_by(
-            Transaction.date.desc()
+            Transaction.date_transaction.desc()
         ).limit(10).all()
         
         recent_transactions = [
@@ -222,7 +239,7 @@ class AIService:
                 "type": t.type,
                 "amount": float(t.amount),
                 "description": t.description,
-                "date": t.date.isoformat(),
+                "date_transaction": t.date_transaction.isoformat(),
                 "category": t.category.name if t.category else None
             }
             for t in recent
@@ -304,13 +321,13 @@ CRITICAL FORMATTING RULES:
 12. Instead of headers (###), just use capitalized sentences
 13. Keep responses conversational and easy to read in a simple chat interface
 
-Example of GOOD response format:
-"You spent $1,001.75 in total. This breaks down as: Alimentação $330.50, Mercados $285.50, Transporte $320.75, and Entretenimento $65.00. Compared to your income of $8,000.00, you're spending about 12.5%, which is excellent. You're doing great with your finances!"
+    Example of GOOD response format:
+"You spent $1,001.75 in total. This breaks down as: Food $330.50, Groceries $285.50, Transport $320.75, and Entertainment $65.00. Compared to your income of $8,000.00, you're spending about 12.5%, which is excellent. You're doing great with your finances!"
 
-Example of BAD response format (DO NOT DO THIS):
-"### Resumo
+    Example of BAD response format (DO NOT DO THIS):
+"### Summary
 - **Total:** $1,001.75
-- **Alimentação:** $330.50"
+- **Food:** $330.50"
 """
         
         # Call OpenAI API
@@ -373,7 +390,7 @@ Example of BAD response format (DO NOT DO THIS):
         lines = []
         for t in transactions[:5]:  # Only show 5 most recent in prompt
             lines.append(
-                f"- {t['date']}: {t['type'].title()} ${t['amount']:.2f} "
+                f"- {t['date_transaction']}: {t['type'].title()} ${t['amount']:.2f} "
                 f"({t['category'] or 'Uncategorized'}) - {t['description']}"
             )
         

@@ -6,7 +6,7 @@ It reads environment variables from .env file and provides type validation.
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, ConfigDict
 
 class Settings(BaseSettings):
     """
@@ -41,14 +41,11 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(..., description="OpenAI API Key")
     openai_model: str = Field(default="gpt-4o-mini", description="OpenAI Model")
 
-    class Config:
-        """
-        Pydantic configuration class.
-        Tells Pydantic where to find environment variables.
-        """
-
-        env_file = ".env"
-        case_sensitive = False
+    # Pydantic V2 config - Tells Pydantic where to find environment variables
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=False
+    )
 
 
 settings = Settings()
