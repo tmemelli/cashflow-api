@@ -232,5 +232,5 @@ def delete_category(
         )
     
     # Soft delete category
-    category = crud_category.soft_delete(db, id=category_id)
+    category = crud_category.remove(db, id=category_id)
     return category

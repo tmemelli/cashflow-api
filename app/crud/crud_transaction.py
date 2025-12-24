@@ -25,17 +25,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
     - Calculate statistics (total income, total expense, balance)
     """
     
-    def get(self, db: Session, id: Any) -> Optional[Transaction]:
-        """
-        Get transaction by ID, ensuring it hasn't been soft-deleted.
-        """
-        return db.query(self.model).filter(
-            and_(
-                self.model.id == id,
-                self.model.is_deleted == False
-            )
-        ).first()
-    
     # get_multi_by_user (list user's active transactions)
     def get_multi_by_user(
         self,
@@ -130,47 +119,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionCreate, TransactionUpdate
             query = query.filter(Transaction.category_id == category_id)
         
         return query.order_by(Transaction.date_transaction.desc()).all()
-    
-    # soft_delete (mark as deleted)
-    def soft_delete(
-        self,
-        db: Session,
-        *,
-        id: int,
-        user_id: int
-    ) -> Optional[Transaction]:
-        """
-        Soft delete a transaction (mark as deleted, don't remove).
-        
-        Args:
-            db: Database session
-            id: Transaction ID
-            user_id: User ID (to verify ownership)
-            
-        Returns:
-            Updated Transaction object or None if not found
-            
-        Example:
-            >>> transaction = crud.transaction.soft_delete(
-            ...     db, id=1, user_id=5
-            ... )
-        """
-        transaction = db.query(self.model).filter(
-            and_(
-                Transaction.id == id,
-                Transaction.user_id == user_id
-            )
-        ).first()
-        
-        if transaction:
-            transaction.is_deleted = True
-            # set deleted_at timestamp for audit/restore
-            transaction.deleted_at = datetime.now(timezone.utc)
-            db.add(transaction)
-            db.commit()
-            db.refresh(transaction)
-        
-        return transaction
     
     # get_statistics (calculate totals)
     def get_statistics(

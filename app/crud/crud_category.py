@@ -280,27 +280,5 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
         # Transactions will keep their category_id, but the category will be hidden
         return True, "OK"
     
-    def soft_delete(self, db: Session, *, id: int) -> Category:
-        """
-        Soft delete a category (mark as deleted).
-        
-        Args:
-            db: Database session
-            id: Category ID
-            
-        Returns:
-            Soft deleted Category object
-        """
-        from datetime import datetime, timezone
-        
-        category = db.get(self.model, id)
-        category.is_deleted = True
-        category.deleted_at = datetime.now(timezone.utc)
-        db.add(category)
-        db.commit()
-        db.refresh(category)
-        return category
-
-
 # Create instance for use in endpoints
 category = CRUDCategory(Category)

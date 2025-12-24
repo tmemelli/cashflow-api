@@ -267,30 +267,39 @@ def delete_transaction(
     """
     Soft delete a transaction.
     
-    Transaction is marked as deleted (is_deleted=True) but not removed from database.
+    The transaction is marked as deleted (is_deleted=True) but remains in the database.
     This preserves data for audit and statistics.
     
     Path Parameters:
-    - transaction_id: Transaction ID
+    - transaction_id: The ID of the transaction to delete
     
     Raises:
-        404: Transaction not found or doesn't belong to user
+        404: If the transaction with the given ID does not exist.
+        403: If the transaction exists but belongs to a different user.
     
     Returns:
-        Soft deleted transaction object with is_deleted=True and deleted_at timestamp
+        The soft-deleted transaction object (is_deleted=True, deleted_at set).
     """
-    transaction = crud_transaction.soft_delete(
-        db,
-        id=transaction_id,
-        user_id=current_user.id
-    )
-    
+    # Retrieve the transaction from database
+    transaction = crud_transaction.get(db=db, id=transaction_id)
+
+    # Check if transaction exists
     if not transaction:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Transaction not found"
         )
-    
+
+    # Check permissions (Security: ensure user owns the transaction)
+    if transaction.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions to delete this transaction"
+        )
+
+    # 4. Execute soft delete (using the generic remove method)
+    transaction = crud_transaction.remove(db=db, id=transaction_id)
+
     return transaction
 
 

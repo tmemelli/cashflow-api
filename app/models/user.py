@@ -2,7 +2,7 @@
 User model module.
 
 This module defines the User model which represents the users table
-in the database. Users can have multiple transactions.
+in the database. Users can have multiple transactions and chats.
 """
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
@@ -16,7 +16,8 @@ class User(Base):
     """
     User model class.
 
-    Represents a user in the system. Each user can create financial transactions.
+    Represents a user in the system. Each user can create financial transactions
+    and interact with the AI chat.
 
     Attributes:
         id: Primary key, auto-incremented integer
@@ -33,6 +34,7 @@ class User(Base):
     Relationships:
         transactions: One-to-many relationship with Transaction model
         categories: One-to-many relationship with Category model
+        chats: One-to-many relationship with Chat model
     """
 
     __tablename__ = "users"
@@ -48,12 +50,20 @@ class User(Base):
     is_superuser = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
 
-    # Timestamp fields (func.now() is from sqlalchemy.sql import func)
+    # Timestamp fields
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    updated_at = Column(DateTime(timezone=True), nullable=True)  # Manual update only
+    
+    # ARCHITECTURE NOTE: 
+    # We intentionally do NOT use 'onupdate=func.now()' here.
+    # This field tracks explicit profile edits (name/email changes).
+    # System events (like login) update 'last_login_at' instead.
+    updated_at = Column(DateTime(timezone=True), nullable=True)
+    
     last_login_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
     transactions = relationship("Transaction", back_populates="owner")
     categories = relationship("Category", back_populates="owner")
     chats = relationship("Chat", back_populates="user")

@@ -1,6 +1,6 @@
-# --- Testing ---
-pytest
-pytest-cov
+# --- Automated Testing ---
+pytest==9.0.2
+pytest-cov==7.0.0
 
-# --- HTTP Client (Testing) ---
-httpx
+# --- HTTP Client (Required for FastAPI TestClient) ---
+httpx==0.28.1
